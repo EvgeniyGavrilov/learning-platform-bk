@@ -1,0 +1,34 @@
+spring:
+#  servlet:
+#    multipart:
+#      max-file-size: 100000MB
+#      max-request-size: 100000MB
+  application:
+    name: auth-service
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/reactive_base
+    username: postgres
+    password: admin
+    pool:
+      enabled: true
+      max-size: 10
+      initial-size: 5
+      max-idle-time: 30000
+    # properties:
+    #   sslMode: REQUIRE
+
+  logging:
+    level:
+      reactor.netty.http.client: DEBUG
+      reactor.netty.http.server.HttpServer: WARN
+      reactor.netty.channel.ChannelOperationsHandler: WARN
+      org:
+        springframework:
+          web:
+            reactive:
+              function:
+                server:
+                  AbstractErrorWebExceptionHandler: WARN
+                client:
+                  ExchangeFunctions: TRACE

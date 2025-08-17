@@ -1,0 +1,57 @@
+package com.medical_learning_platform.app.auth.code;
+
+import com.medical_learning_platform.app.user.User;
+import com.medical_learning_platform.app.user.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+
+@Slf4j
+@AllArgsConstructor
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:4200")
+public class CodeController {
+
+    private CodeService codeService;
+    private final UserRepository userRepository;
+
+//    @PostMapping("/code")
+//    public Mono<Void> generateAndSendCode(@RequestBody CodeRequest request) {
+//        log.info("loginWithCode request: {}", request.getEmail());
+//        return codeService.generateAndSendCode(request.getEmail());
+//    }
+
+    @PostMapping("/login-with-code")
+    public Mono<ResponseEntity<Void>> loginWithCode(@RequestBody CodeRequest request) {
+        return userRepository.findByEmail(request.getEmail())
+            .flatMap(user -> codeService.generateAndSendCode(user.getEmail())
+                .thenReturn(ResponseEntity.ok().<Void>build()))
+            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+    }
+
+    @PostMapping("/register-with-code")
+    public Mono<ResponseEntity<Void>> registerWithCode(@RequestBody CodeRequest request) {
+        return userRepository.findByEmail(request.getEmail())
+            .flatMap(existingUser -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).<Void>build()))
+            .switchIfEmpty(
+                userRepository.save(new User(null, request.getEmail(), null, null))
+                    .flatMap(user -> codeService.generateAndSendCode(user.getEmail()))
+                    .thenReturn(ResponseEntity.ok().<Void>build())
+            );
+    }
+
+    @PostMapping("/verify-code")
+    public Mono<ResponseEntity<VerifyCodeResponse>> verifyCode(@RequestBody VerifyCodeRequest codeRequest) {
+        log.info("verifyCode request: {}, {}", codeRequest.getCode(), codeRequest.getEmail());
+        return codeService.verifyCode(codeRequest.getEmail(), codeRequest.getCode())
+            .map(valid -> valid
+                ? ResponseEntity.ok(new VerifyCodeResponse("JWT_TOKEN")) //  TODO: return custom jwt
+                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+            );
+    }
+}

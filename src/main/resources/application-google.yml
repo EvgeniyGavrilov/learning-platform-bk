@@ -1,0 +1,4 @@
+google:
+  client-id: 1059021818746-66m4lt07imj6afipp7vjdpvuo46d1jqd.apps.googleusercontent.com
+  client-secret: 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
+  redirect-uri: postmessage

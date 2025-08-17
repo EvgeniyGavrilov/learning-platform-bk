@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: evgeniy.gavrilov.dev@gmail.com
+    password: azdr dxni jtmw dots
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        debug: true
+        transport:
+          protocol: smtp
