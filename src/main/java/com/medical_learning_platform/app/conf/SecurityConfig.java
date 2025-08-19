@@ -1,8 +1,9 @@
 package com.medical_learning_platform.app.conf;
 
-import com.medical_learning_platform.app.auth.JwtService;
+import com.medical_learning_platform.app.auth.token.TokenService;
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -12,24 +13,20 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebFluxSecurity
 @AllArgsConstructor
 public class SecurityConfig {
-    private final JwtService jwtService;
+    private final TokenService jwtService;
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -42,23 +39,30 @@ public class SecurityConfig {
                 .pathMatchers("/api/login-with-code").permitAll()
                 .pathMatchers("/api/register-with-code").permitAll()
                 .pathMatchers("/api/verify-code").permitAll()
+                .pathMatchers("/api/token/refresh").permitAll()
+                .pathMatchers("/api/video/**").permitAll()
                 .pathMatchers("/api/**").permitAll()
-                .pathMatchers("/api/upload-video").authenticated()
 //                        .anyExchange().authenticated()
                 .anyExchange().permitAll()
             )
-//                .httpBasic(Customizer.withDefaults())
-            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+//            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
     @Bean
     public AuthenticationWebFilter jwtAuthenticationFilter() {
         ReactiveAuthenticationManager authManager = authentication -> {
-            String token = authentication.getCredentials().toString(); // principal = null, credentials = token
-            Claims claims = jwtService.validateToken(token);
-            String userId = claims.getSubject();
-            return Mono.just(new UsernamePasswordAuthenticationToken(userId, token, List.of()));
+            try {
+                String token = authentication.getCredentials().toString();
+                Claims claims = jwtService.validateAccessToken(token);
+                String userId = claims.getSubject();
+
+                return Mono.just(new UsernamePasswordAuthenticationToken(userId, token, List.of()));
+            } catch (ResponseStatusException e) {
+                log.info("jwtAuthenticationFilter error!!!");
+                log.info(e.getStatusCode().toString());
+                return Mono.error(e);
+            }
         };
 
         ServerAuthenticationConverter converter = exchange ->

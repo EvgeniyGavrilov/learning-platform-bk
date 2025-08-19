@@ -36,3 +36,7 @@ spring:
                   AbstractErrorWebExceptionHandler: WARN
                 client:
                   ExchangeFunctions: TRACE
+
+jwt:
+  access-secret: yGWtgL2lfOp8rzSyRhNmSbC290iR3ifUT/30ATxS+jY=
+  refresh-secret: TK5owe3GYyGht4yx/mGAsRi9sirI7738HD+LrduFpDo=

@@ -1,6 +1,6 @@
 package com.medical_learning_platform.app.auth.code;
 
-import com.medical_learning_platform.app.auth.JwtService;
+import com.medical_learning_platform.app.auth.token.TokenService;
 import com.medical_learning_platform.app.user.User;
 import com.medical_learning_platform.app.user.UserRepository;
 import lombok.AllArgsConstructor;
@@ -16,18 +16,12 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:4200")
+//@CrossOrigin(origins = "http://localhost:4200")
 public class CodeController {
 
     private CodeService codeService;
     private final UserRepository userRepository;
-    private final JwtService jwtService;
-
-//    @PostMapping("/code")
-//    public Mono<Void> generateAndSendCode(@RequestBody CodeRequest request) {
-//        log.info("loginWithCode request: {}", request.getEmail());
-//        return codeService.generateAndSendCode(request.getEmail());
-//    }
+    private final TokenService jwtService;
 
     @PostMapping("/login-with-code")
     public Mono<ResponseEntity<Void>> loginWithCode(@RequestBody CodeRequest request) {
@@ -56,6 +50,11 @@ public class CodeController {
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
             .filterWhen(user -> codeService.verifyCode(codeRequest.getEmail(), codeRequest.getCode()))
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid code")))
-            .map(user -> ResponseEntity.ok(new VerifyCodeResponse(jwtService.generateToken(user.getId(), user.getEmail()))));
+            .map(user -> ResponseEntity.ok(
+                new VerifyCodeResponse(
+                    jwtService.generateAccessToken(user.getId(), user.getEmail()),
+                    jwtService.generateRefreshToken(user.getId(), user.getEmail())
+                )
+            ));
     }
 }

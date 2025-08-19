@@ -8,6 +8,7 @@ import lombok.Data;
 public class GoogleAuthResponse {
 //    private String accessToken;
 //    private String userId;
-    private String jwt;
+    private String accessToken;
+    private String refreshToken;
 
 }
