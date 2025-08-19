@@ -26,7 +26,7 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 @AllArgsConstructor
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/ipa/v2")
+@RequestMapping("/api/video")
 public class VideoUploadController {
     private static final Path UPLOAD_DIR = Paths.get("uploads");
 
@@ -44,11 +44,11 @@ public class VideoUploadController {
         log.info(String.valueOf(file));
         Path destination = UPLOAD_DIR.resolve(fileName);
         return file.transferTo(destination)
-                .thenReturn("/ipa/v2/videos/" + fileName);
+                .thenReturn("/api/video/uploaded/" + fileName);
 //        return Mono.just("You sent: ");
     }
 
-    @GetMapping("/videos/{filename:.+}")
+    @GetMapping("/uploaded/{filename:.+}")
     public Mono<ResponseEntity<Resource>> serveVideo(@PathVariable String filename) {
         Path filePath = UPLOAD_DIR.resolve(filename).normalize();
         FileSystemResource resource = new FileSystemResource(filePath.toFile());

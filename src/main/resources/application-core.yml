@@ -17,6 +17,10 @@ spring:
       max-idle-time: 30000
     # properties:
     #   sslMode: REQUIRE
+  sql:
+    init:
+      mode: always       # всегда выполнять schema.sql при старте
+      schema-locations: classpath:schema.sql
 
   logging:
     level:

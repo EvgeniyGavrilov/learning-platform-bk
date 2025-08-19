@@ -1,5 +1,6 @@
 package com.medical_learning_platform.app.auth.code;
 
+import com.medical_learning_platform.app.auth.JwtService;
 import com.medical_learning_platform.app.user.User;
 import com.medical_learning_platform.app.user.UserRepository;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 
@@ -19,6 +21,7 @@ public class CodeController {
 
     private CodeService codeService;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
 //    @PostMapping("/code")
 //    public Mono<Void> generateAndSendCode(@RequestBody CodeRequest request) {
@@ -48,10 +51,11 @@ public class CodeController {
     @PostMapping("/verify-code")
     public Mono<ResponseEntity<VerifyCodeResponse>> verifyCode(@RequestBody VerifyCodeRequest codeRequest) {
         log.info("verifyCode request: {}, {}", codeRequest.getCode(), codeRequest.getEmail());
-        return codeService.verifyCode(codeRequest.getEmail(), codeRequest.getCode())
-            .map(valid -> valid
-                ? ResponseEntity.ok(new VerifyCodeResponse("JWT_TOKEN")) //  TODO: return custom jwt
-                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-            );
+
+        return userRepository.findByEmail(codeRequest.getEmail())
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+            .filterWhen(user -> codeService.verifyCode(codeRequest.getEmail(), codeRequest.getCode()))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid code")))
+            .map(user -> ResponseEntity.ok(new VerifyCodeResponse(jwtService.generateToken(user.getId(), user.getEmail()))));
     }
 }

@@ -34,22 +34,22 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(Customizer.withDefaults())
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/auth/google").permitAll()
-                        .pathMatchers("/api/code").permitAll()
-                        .pathMatchers("/api/login-with-code").permitAll()
-                        .pathMatchers("/api/register-with-code").permitAll()
-                        .pathMatchers("/api/verify-code").permitAll()
-                        .pathMatchers("/api/**").permitAll()
-                        .pathMatchers("/ipa/**").permitAll()
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .cors(Customizer.withDefaults())
+            .authorizeExchange(exchanges -> exchanges
+                .pathMatchers("/api/auth/google").permitAll()
+                .pathMatchers("/api/code").permitAll()
+                .pathMatchers("/api/login-with-code").permitAll()
+                .pathMatchers("/api/register-with-code").permitAll()
+                .pathMatchers("/api/verify-code").permitAll()
+                .pathMatchers("/api/**").permitAll()
+                .pathMatchers("/api/upload-video").authenticated()
 //                        .anyExchange().authenticated()
-                        .anyExchange().permitAll()
-                )
+                .anyExchange().permitAll()
+            )
 //                .httpBasic(Customizer.withDefaults())
-                .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
+            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @Bean
@@ -71,18 +71,4 @@ public class SecurityConfig {
         filter.setServerAuthenticationConverter(converter);
         return filter;
     }
-
-
-
-//    @Bean
-//    public MapReactiveUserDetailsService userDetailsService() {
-//        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//        UserDetails user = User
-//                .withUsername("admin")
-//                .password(encoder.encode("admin"))
-//                .roles("USER")
-//                .build();
-//
-//        return new MapReactiveUserDetailsService(user);
-//    }
 }

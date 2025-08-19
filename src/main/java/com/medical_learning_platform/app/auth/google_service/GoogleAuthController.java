@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -22,8 +23,8 @@ public class GoogleAuthController {
         log.info("GoogleAuthRequest request: {}", request.getCode());
 
         return authService.authenticateWithGoogle(request.getCode())
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+            .map(ResponseEntity::ok)
+            .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Google authentication failed")));
     }
 
     @PostMapping("/google/callback")

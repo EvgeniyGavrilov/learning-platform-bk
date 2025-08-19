@@ -1,5 +1,6 @@
 package com.medical_learning_platform.app.auth.google_service;
 
+import com.medical_learning_platform.app.auth.JwtService;
 import com.medical_learning_platform.app.user.User;
 import com.medical_learning_platform.app.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -17,17 +18,20 @@ import reactor.core.publisher.Mono;
 public class GoogleAuthService {
     private final WebClient.Builder webClientBuilder;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
     private final String clientId;
     private final String clientSecret;
 
     public GoogleAuthService(
-            WebClient.Builder webClientBuilder,
-            UserRepository userRepository,
-            @Value("${google.client-id}") String clientId,
-            @Value("${google.client-secret}") String clientSecret
+        WebClient.Builder webClientBuilder,
+        UserRepository userRepository,
+        JwtService jwtService,
+        @Value("${google.client-id}") String clientId,
+        @Value("${google.client-secret}") String clientSecret
     ) {
         this.webClientBuilder = webClientBuilder;
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
     }
@@ -38,12 +42,11 @@ public class GoogleAuthService {
             .doOnNext(body -> {
                 log.info("authenticateWithGoogle: {}", body);
             })
-        .flatMap(tokens -> getUserInfo(tokens.getAccessToken())
-            .flatMap(googleUser -> saveOrUpdateUser(googleUser)
-//                .map(user -> new GoogleAuthResponse(tokens.getAccessToken(), user.getId())) //  TODO: return custom jwt
-                .map(user -> new GoogleAuthResponse("JWT_TOKEN")) //  TODO: return custom jwt
-            )
-        );
+            .flatMap(tokens -> getUserInfo(tokens.getAccessToken())
+                .flatMap(googleUser -> saveOrUpdateUser(googleUser)
+                    .map(user -> new GoogleAuthResponse(jwtService.generateToken(user.getId(), user.getEmail()))) //  TODO: return custom jwt
+                )
+            );
     }
 
 

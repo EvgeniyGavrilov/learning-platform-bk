@@ -13,9 +13,9 @@ import java.util.Date;
 public class JwtService {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    public String generateToken(String userId, String email) {
+    public String generateToken(Long userId, String email) {
         return Jwts.builder()
-            .setSubject(userId)
+            .setSubject(String.valueOf(userId))
             .claim("email", email)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + 3600_000)) // 1 час
