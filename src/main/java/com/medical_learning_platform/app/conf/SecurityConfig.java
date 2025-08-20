@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
@@ -33,19 +34,22 @@ public class SecurityConfig {
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .cors(Customizer.withDefaults())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)  // <- отключаем basic auth
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)  // <- отключаем form login
             .authorizeExchange(exchanges -> exchanges
+                .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/api/auth/google").permitAll()
                 .pathMatchers("/api/code").permitAll()
                 .pathMatchers("/api/login-with-code").permitAll()
                 .pathMatchers("/api/register-with-code").permitAll()
                 .pathMatchers("/api/verify-code").permitAll()
                 .pathMatchers("/api/token/refresh").permitAll()
-                .pathMatchers("/api/video/**").permitAll()
+                .pathMatchers("/api/video/uploaded/{filename:.+}").authenticated()
+                .pathMatchers("/api/video/upload").authenticated()
                 .pathMatchers("/api/**").permitAll()
-//                        .anyExchange().authenticated()
                 .anyExchange().permitAll()
             )
-//            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
