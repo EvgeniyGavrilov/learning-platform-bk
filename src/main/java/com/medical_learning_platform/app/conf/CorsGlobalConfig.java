@@ -15,7 +15,7 @@ import java.util.List;
 @EnableWebFlux
 public class CorsGlobalConfig implements WebFluxConfigurer {
     @Bean
-    public CorsWebFilter corsWebFilter() {
+    public CorsWebFilter corsWebFilter() { // TODO: corsWebFilter or addCorsMappings
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4200"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -28,13 +28,13 @@ public class CorsGlobalConfig implements WebFluxConfigurer {
         return new CorsWebFilter(source);
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry corsRegistry) {
-        corsRegistry.addMapping("/**")
-            .allowedOrigins("http://localhost:4200")
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-//            .allowedHeaders("*")
-//            .allowCredentials(true)
-            .maxAge(3600);
-    }
+//    @Override
+//    public void addCorsMappings(CorsRegistry corsRegistry) { // TODO: corsWebFilter or addCorsMappings
+//        corsRegistry.addMapping("/**")
+//            .allowedOrigins("http://localhost:4200")
+//            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+////            .allowedHeaders("*")
+////            .allowCredentials(true)
+//            .maxAge(3600);
+//    }
 }

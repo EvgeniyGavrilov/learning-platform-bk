@@ -38,7 +38,6 @@ public class VideoUploadController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping(value = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Mono<String> uploadVideo(@RequestPart("video") FilePart file) {
         String fileName = file.filename();
