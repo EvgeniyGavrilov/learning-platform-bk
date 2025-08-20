@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "http://localhost:4200")
 public class TokenController {
 
     private final TokenService jwtService;

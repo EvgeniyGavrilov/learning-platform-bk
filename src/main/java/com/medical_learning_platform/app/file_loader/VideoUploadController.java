@@ -25,7 +25,6 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 @Slf4j
 @AllArgsConstructor
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api/video")
 public class VideoUploadController {
     private static final Path UPLOAD_DIR = Paths.get("uploads");
