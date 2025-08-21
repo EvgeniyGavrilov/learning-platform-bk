@@ -29,7 +29,7 @@ public class TokenService {
             .claim("email", email)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + 3600_000)) // 1 час
-//            .setExpiration(new Date(System.currentTimeMillis() + 60000)) // 1 min
+//            .setExpiration(new Date(System.currentTimeMillis() + 10000)) // 1 min
             .signWith(accessKey)
             .compact();
     }

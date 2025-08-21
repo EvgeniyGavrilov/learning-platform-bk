@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .pathMatchers("/api/token/refresh").permitAll()
                 .pathMatchers("/api/video/uploaded/{filename:.+}").authenticated()
                 .pathMatchers("/api/video/upload").authenticated()
+                .pathMatchers("/api/courses/**").authenticated()
                 .pathMatchers("/api/**").permitAll()
                 .anyExchange().permitAll()
             )
