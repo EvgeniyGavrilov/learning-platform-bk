@@ -99,6 +99,7 @@ public class LessonService {
                                         lesson.getTitle(),
                                         lesson.getDescription(),
                                         lesson.getPosition(),
+                                        lesson.getCreatedAt(),
                                         access ?
                                         new VideoDto(
                                             video.getId(),
@@ -115,6 +116,7 @@ public class LessonService {
                                             lesson.getTitle(),
                                             lesson.getDescription(),
                                             lesson.getPosition(),
+                                            lesson.getCreatedAt(),
                                             null
                                         )
                                     ))
@@ -145,6 +147,7 @@ public class LessonService {
                                     lesson.getTitle(),
                                     lesson.getDescription(),
                                     lesson.getPosition(),
+                                    lesson.getCreatedAt(),
                                     access ? new VideoDto(
                                             video.getId(),
                                             video.getLessonId(),
@@ -159,6 +162,7 @@ public class LessonService {
                                     lesson.getTitle(),
                                     lesson.getDescription(),
                                     lesson.getPosition(),
+                                    lesson.getCreatedAt(),
                                     null
                                 )))
                             )

@@ -27,7 +27,7 @@ public class SectionController {
             Authentication authentication
     ) {
         log.info("Add section '{}' to course {}", section.getTitle(), courseId);
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return sectionService.addSection(courseId, section, authorId);
     }
 
@@ -41,7 +41,7 @@ public class SectionController {
             Authentication authentication
     ) {
         log.info("Add section '{}' to course {}", section.getTitle(), courseId);
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return sectionService.updateSection(courseId, section, authorId);
     }
 
@@ -54,7 +54,8 @@ public class SectionController {
             @PathVariable Long sectionId,
             Authentication authentication
     ) {
-        Long authorId = (Long) authentication.getPrincipal();
+        log.info("Delete section '{}' to course {}", sectionId, courseId);
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return sectionService.deleteSections(courseId, sectionId, authorId);
     }
 
@@ -67,7 +68,7 @@ public class SectionController {
             @PathVariable Long sectionId,
             Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return sectionService.getSection(courseId, sectionId, userId);
     }
 
@@ -79,7 +80,7 @@ public class SectionController {
             @PathVariable Long courseId,
             Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return sectionService.getSections(courseId, userId);
     }
 }

@@ -33,7 +33,7 @@ public class VideoController {
         Authentication authentication
     ) {
         log.info("Upload video '{}' for course {}, section {}, lesson {}", file.filename(), courseId, sectionId, lessonId);
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return videoService.addVideo(courseId, sectionId, lessonId, file, authorId);
     }
 
@@ -50,7 +50,7 @@ public class VideoController {
         Authentication authentication
     ) {
         log.info("Update video '{}' for course {}, section {}, lesson {}", file.filename(), courseId, sectionId, lessonId);
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return videoService.updateVideo(courseId, sectionId, lessonId, file, authorId);
     }
 
@@ -66,7 +66,7 @@ public class VideoController {
         Authentication authentication
     ) {
         log.info("Delete video '{}' for course {}, section {}, lesson {}", videoId, courseId, sectionId, lessonId);
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return videoService.deleteVideo(courseId, sectionId, lessonId, videoId, authorId);
     }
 
@@ -80,7 +80,7 @@ public class VideoController {
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return videoService.getVideo(courseId, sectionId, lessonId, userId);
     }
 }

@@ -41,7 +41,7 @@ public class SectionService {
     }
 
     public Mono<Void> deleteSections(Long courseId, Long sectionId, Long authorId) {
-        return sectionRepository.deleteById(courseId);
+        return sectionRepository.deleteById(sectionId);
     }
 
     public Mono<Section> getSection(Long courseId, Long sectionId, Long userId) {

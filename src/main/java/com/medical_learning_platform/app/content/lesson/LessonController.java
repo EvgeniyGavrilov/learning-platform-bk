@@ -27,8 +27,8 @@ public class LessonController {
         @RequestBody Lesson lesson,
         Authentication authentication
     ) {
-        Long authorId = (Long) authentication.getPrincipal();
         log.info("Create lesson '{}' for course {}, section {}", lesson.getTitle(), courseId, sectionId);
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return lessonService.createLesson(lesson, authorId);
     }
 
@@ -43,8 +43,8 @@ public class LessonController {
         @RequestBody Lesson updatedLesson,
         Authentication authentication
     ) {
-        Long authorId = (Long) authentication.getPrincipal();
         log.info("Update lesson {} in course {}, section {}", lessonId, courseId, sectionId);
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return lessonService.updateLesson(lessonId, updatedLesson, authorId);
     }
 
@@ -58,8 +58,8 @@ public class LessonController {
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        Long authorId = (Long) authentication.getPrincipal();
         log.info("Delete lesson {} in course {}, section {}", lessonId, courseId, sectionId);
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return lessonService.deleteLesson(lessonId, authorId);
     }
 
@@ -72,7 +72,7 @@ public class LessonController {
         @PathVariable Long sectionId,
         Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return lessonService.getLessonsBySection(sectionId, userId);
     }
 
@@ -86,7 +86,7 @@ public class LessonController {
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return lessonService.getLessonById(sectionId, lessonId, userId);
     }
 }

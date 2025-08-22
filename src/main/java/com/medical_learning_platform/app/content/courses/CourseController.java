@@ -20,8 +20,8 @@ public class CourseController {
 
     @PostMapping
     public Mono<Course> createCourse(@RequestBody Course course, Authentication authentication) {
-        log.info("Create course: {}", course.getTitle());
-        Long userId = (Long) authentication.getPrincipal();
+        log.info("Create course: {}", course.toString());
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.createCourse(course, userId);
     }
 
@@ -31,7 +31,7 @@ public class CourseController {
             @RequestBody Course updatedCourse,
             Authentication authentication
     ) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.updateCourse(id, updatedCourse, userId);
     }
 
@@ -43,7 +43,7 @@ public class CourseController {
         @PathVariable Long id,
         Authentication authentication
     ) {
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.deleteCourse(id, authorId);
     }
 
@@ -52,7 +52,7 @@ public class CourseController {
      */
     @GetMapping("/{courseId}")
     public Mono<Course> getCourse(@PathVariable Long courseId, Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.getCourse(courseId, userId);
     }
 
@@ -69,7 +69,7 @@ public class CourseController {
      */
     @GetMapping("/{courseId}/full")
     public Mono<CourseFullDto> getFullCourse(@PathVariable Long courseId, Authentication authentication) {
-        Long authorId = (Long) authentication.getPrincipal();
+        Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.getFullCourse(courseId, authorId);
     }
 }

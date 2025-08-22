@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,6 +17,7 @@ public class LessonDto {
     private String title;
     private String description;
     private int position;
+    private LocalDateTime createdAt;
 //    private List<VideoDto> videos; // вложенные видео
     private VideoDto video; // вложенные видео
 }

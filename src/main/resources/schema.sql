@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS videos (
 );
 
 -- Доступ к курсам
-CREATE TABLE course_access (
+CREATE TABLE IF NOT EXISTS course_access (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,

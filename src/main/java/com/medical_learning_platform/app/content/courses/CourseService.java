@@ -113,6 +113,7 @@ public class CourseService {
                                             lesson.getTitle(),
                                             lesson.getDescription(),
                                             lesson.getPosition(),
+                                            lesson.getCreatedAt(),
                                             videoDto
                                         );
                                     })
@@ -122,6 +123,7 @@ public class CourseService {
                                         lesson.getTitle(),
                                         lesson.getDescription(),
                                         lesson.getPosition(),
+                                        lesson.getCreatedAt(),
                                         null
                                     )))
                             )
