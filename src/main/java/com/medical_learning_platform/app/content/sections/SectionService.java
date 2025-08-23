@@ -69,7 +69,7 @@ public class SectionService {
     /**
      * Удалить раздел в курс
      */
-    public Mono<Void> deleteSections(Long courseId, Long sectionId, Long authorId) {
+    public Mono<Void> deleteSections(Long courseId, Long sectionId, Long authorId) { // TODO: don't delete dir's
         return courseService.getCourseOrThrow(courseId)
             .then(
                 this.accessService.hasEditAccessOrThrow(courseId, authorId)

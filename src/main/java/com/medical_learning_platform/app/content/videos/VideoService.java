@@ -1,7 +1,7 @@
 package com.medical_learning_platform.app.content.videos;
 
 
-import com.medical_learning_platform.app.content.courses.repository.CourseAccessRepository;
+import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
 import com.medical_learning_platform.app.content.file_loader.VideoFileUtils;
 import com.medical_learning_platform.app.content.lesson.entity.Lesson;
@@ -18,17 +18,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -40,57 +36,17 @@ public class VideoService {
     private final SectionRepository sectionRepository;
     private final VideoRepository videoRepository;
     private final LessonRepository lessonRepository;
-
-//    private static final Path UPLOAD_DIR = Paths.get("uploads");
+    private final AccessService accessService;
 
     /**
      * Загрузить видео в раздел
      */
     public Mono<Video> addVideo(Long courseId, Long sectionId, Long lessonId, FilePart file, Long authorId) {
-        return validateAuthor(courseId, sectionId, lessonId, authorId)
-            .flatMap(lesson -> {
-                String filename = file.filename();
-                Path lessonDir = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId);
-
-                return Mono.fromRunnable(() -> {
-                    try {
-                        Files.createDirectories(lessonDir);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .then(videoRepository.findByLessonId(lessonId)
-                    .flatMap(existingVideo -> {
-                        Path oldFile = lessonDir.resolve(existingVideo.getFilename());
-                        return VideoFileUtils.deleteFile(oldFile)
-                            .then(videoRepository.delete(existingVideo));
-                    })
-                    .then(file.transferTo(lessonDir.resolve(filename)))
-                    .then(Mono.defer(() -> {
-                        Video video = new Video();
-                        video.setLessonId(lessonId);
-                        video.setFilename(filename);
-                        video.setUrl("/api/video/uploaded/" + courseId + "/" + sectionId + "/" + lessonId + "/" + filename);
-                        video.setUploadedAt(LocalDateTime.now());
-                        return videoRepository.save(video);
-                    }))
-                );
-            });
-    }
-
-    /**
-     * Обновить видео в раздел
-     */
-    public Mono<Video> updateVideo(Long courseId, Long sectionId, Long lessonId, FilePart file, Long authorId) {
-        return validateAuthor(courseId, sectionId, lessonId, authorId)
-            .flatMap(lesson -> videoRepository.findByLessonId(lesson.getId())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
-                .flatMap(existingVideo -> {
-
+        return accessService.hasEditAccessOrThrow(courseId, authorId).then(
+            validateHierarchy(courseId, sectionId, lessonId)
+                .flatMap(lesson -> {
+                    String filename = file.filename();
                     Path lessonDir = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId);
-                    Path oldFile = lessonDir.resolve(existingVideo.getFilename());
-                    Path newFile = lessonDir.resolve(file.filename());
 
                     return Mono.fromRunnable(() -> {
                         try {
@@ -100,39 +56,87 @@ public class VideoService {
                         }
                     })
                     .subscribeOn(Schedulers.boundedElastic())
-                    .then(VideoFileUtils.deleteFile(oldFile))
-                    .then(file.transferTo(newFile))
-                    .then(Mono.defer(() -> {
-                        existingVideo.setFilename(file.filename());
-                        existingVideo.setUrl("/api/courses/" + courseId + "/sections/" + sectionId + "/lessons/" + lessonId + "/video/file/" + file.filename());
-                        existingVideo.setUploadedAt(LocalDateTime.now());
-                        return videoRepository.save(existingVideo);
-                    }));
+                    .then(videoRepository.findByLessonId(lessonId)
+                        .flatMap(existingVideo -> {
+                            Path oldFile = lessonDir.resolve(existingVideo.getFilename());
+                            return VideoFileUtils.deleteFile(oldFile)
+                                    .then(videoRepository.delete(existingVideo));
+                        })
+                        .then(file.transferTo(lessonDir.resolve(filename)))
+                        .then(Mono.defer(() -> {
+                            Video video = new Video();
+                            video.setLessonId(lessonId);
+                            video.setFilename(filename);
+                            video.setUrl("/api/video/uploaded/" + courseId + "/" + sectionId + "/" + lessonId + "/" + filename);
+                            video.setUploadedAt(LocalDateTime.now());
+                            return videoRepository.save(video);
+                        }))
+                    );
                 })
-            );
+        );
+    }
+
+    /**
+     * Обновить видео в раздел
+     */
+    public Mono<Video> updateVideo(Long courseId, Long sectionId, Long lessonId, FilePart file, Long authorId) {
+        return accessService.hasEditAccessOrThrow(courseId, authorId).then(
+            validateHierarchy(courseId, sectionId, lessonId)
+                .flatMap(lesson -> videoRepository.findByLessonId(lesson.getId())
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
+                    .flatMap(existingVideo -> {
+
+                        Path lessonDir = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId);
+                        Path oldFile = lessonDir.resolve(existingVideo.getFilename());
+                        Path newFile = lessonDir.resolve(file.filename());
+
+                        return Mono.fromRunnable(() -> {
+                            try {
+                                Files.createDirectories(lessonDir);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .then(VideoFileUtils.deleteFile(oldFile))
+                        .then(file.transferTo(newFile))
+                        .then(Mono.defer(() -> {
+                            existingVideo.setFilename(file.filename());
+                            existingVideo.setUrl("/api/courses/" + courseId + "/sections/" + sectionId + "/lessons/" + lessonId + "/video/file/" + file.filename());
+                            existingVideo.setUploadedAt(LocalDateTime.now());
+                            return videoRepository.save(existingVideo);
+                        }));
+                    })
+                )
+        );
     }
 
     /**
      * Удалить видео в раздел
      */
     public Mono<Void> deleteVideo(Long courseId, Long sectionId, Long lessonId, Long videoId, Long authorId) {
-        return validateAuthor(courseId, sectionId, lessonId, authorId)
-            .then(videoRepository.findById(videoId))
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
-            .flatMap(video -> {
-                Path filePath = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId).resolve(video.getFilename());
-                return VideoFileUtils.deleteFile(filePath)
-                    .then(videoRepository.deleteById(videoId))
-                    .then(VideoFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId));
-            });
+        return accessService.hasEditAccessOrThrow(courseId, authorId).then(
+            validateHierarchy(courseId, sectionId, lessonId)
+                .then(videoRepository.findById(videoId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
+                .flatMap(video -> {
+                    Path filePath = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId).resolve(video.getFilename());
+                    return VideoFileUtils.deleteFile(filePath)
+                            .then(videoRepository.deleteById(videoId))
+                            .then(VideoFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId));
+                })
+        );
     }
 
     /**
      * Взять видео в раздел
      */
     public Mono<Video> getVideo(Long courseId, Long sectionId, Long lessonId, Long userId) {
-        return validateAuthor(courseId, sectionId, lessonId, userId)
-                .flatMap(lesson -> videoRepository.findByLessonId(lesson.getId()));
+        return accessService.hasReadAccessOrThrow(courseId, userId).then(
+            validateHierarchy(courseId, sectionId, lessonId).flatMap(lesson ->
+                videoRepository.findByLessonId(lesson.getId())
+            )
+        );
     }
 
     public Mono<ResponseEntity<Resource>> serveVideo(Long courseId, Long sectionId, Long lessonId, String filename) {
@@ -168,7 +172,7 @@ public class VideoService {
         };
     }
 
-    private Mono<Lesson> validateAuthor(Long courseId, Long sectionId, Long lessonId, Long authorId) {
+    private Mono<Lesson> validateHierarchy(Long courseId, Long sectionId, Long lessonId) {
         return lessonRepository.findById(lessonId)
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lesson not found")))
             .flatMap(lesson ->
@@ -178,9 +182,6 @@ public class VideoService {
                         courseRepository.findById(courseId)
                             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")))
                             .flatMap(course -> {
-                                if (!course.getAuthorId().equals(authorId)) {
-                                    return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not author of course"));
-                                }
                                 if (!section.getCourseId().equals(course.getId())) {
                                     return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section does not belong to course"));
                                 }

@@ -47,7 +47,7 @@ public class GoogleAuthService {
                     .map(user -> new GoogleAuthResponse(
                         jwtService.generateAccessToken(user.getId(), user.getEmail()),
                         jwtService.generateRefreshToken(user.getId(), user.getEmail())
-                    )) //  TODO: return custom jwt
+                    ))
                 )
             );
     }

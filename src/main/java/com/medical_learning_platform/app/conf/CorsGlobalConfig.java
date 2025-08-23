@@ -30,7 +30,7 @@ public class CorsGlobalConfig implements WebFluxConfigurer {
     }
 
 //    @Bean
-//    public CorsWebFilter corsWebFilter() { // TODO: corsWebFilter or addCorsMappings
+//    public CorsWebFilter corsWebFilter() {
 //        CorsConfiguration config = new CorsConfiguration();
 //        config.setAllowedOrigins(List.of("http://localhost:4200"));
 //        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -45,7 +45,7 @@ public class CorsGlobalConfig implements WebFluxConfigurer {
 //    }
 
 //    @Override
-//    public void addCorsMappings(CorsRegistry corsRegistry) { // TODO: corsWebFilter or addCorsMappings
+//    public void addCorsMappings(CorsRegistry corsRegistry) {
 //        corsRegistry.addMapping("/**")
 //            .allowedOrigins("http://localhost:4200")
 //            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

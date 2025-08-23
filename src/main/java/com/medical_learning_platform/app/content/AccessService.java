@@ -44,8 +44,8 @@ public class AccessService {
             });
     }
 
-    public Mono<Boolean> hasReadAccess(Long courseId, Long authorId) {
-        return getAccessInfo(courseId, authorId)
+    public Mono<Boolean> hasReadAccessOrThrow(Long courseId, Long user) {
+        return getAccessInfo(courseId, user)
             .flatMap(info -> {
                 if (info.isReadAccess()) {
                     return Mono.just(true);

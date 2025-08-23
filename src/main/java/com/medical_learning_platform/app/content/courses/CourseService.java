@@ -70,7 +70,7 @@ public class CourseService {
     /**
      * Удалить курс
      */
-    public Mono<Void> deleteCourse(Long courseId, Long authorId) {
+    public Mono<Void> deleteCourse(Long courseId, Long authorId) { // TODO: don't delete dir's
         return getCourseOrThrow(courseId)
             .flatMap(course ->
                 accessService.hasEditAccessOrThrow(courseId, authorId)
