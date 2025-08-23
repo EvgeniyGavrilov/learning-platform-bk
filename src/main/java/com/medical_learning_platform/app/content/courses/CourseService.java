@@ -1,12 +1,12 @@
 package com.medical_learning_platform.app.content.courses;
 
 
+import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.dto.CourseFullDto;
 import com.medical_learning_platform.app.content.lesson.dto.LessonDto;
 import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
 import com.medical_learning_platform.app.content.sections.dto.SectionFullDto;
 import com.medical_learning_platform.app.content.courses.entity.Course;
-import com.medical_learning_platform.app.content.courses.repository.CourseAccessRepository;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
 import com.medical_learning_platform.app.content.sections.repository.SectionRepository;
 import com.medical_learning_platform.app.content.videos.dto.VideoDto;
@@ -29,8 +29,18 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final SectionRepository sectionRepository;
     private final VideoRepository videoRepository;
-    private final CourseAccessRepository accessRepository;
     private final LessonRepository lessonRepository;
+    private final AccessService accessService;
+
+    /**
+     * Проверка наличия курса
+     */
+    public Mono<Course> getCourseOrThrow(Long courseId) {
+        return courseRepository.findById(courseId)
+            .switchIfEmpty(Mono.error(new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Course not found"
+            )));
+    }
 
     /**
      * Создать курс
@@ -44,31 +54,28 @@ public class CourseService {
     /**
      * Обновить курс
      */
-    public Mono<Course> updateCourse(Long id, Course updatedCourse, Long authorId) {
-        return courseRepository.findById(id)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")))
-            .flatMap(course -> {
-                if (!course.getAuthorId().equals(authorId)) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your course"));
-                }
-                course.setTitle(updatedCourse.getTitle());
-                course.setDescription(updatedCourse.getDescription());
-                course.setImageUrl(updatedCourse.getImageUrl());
-                return courseRepository.save(course);
-            });
+    public Mono<Course> updateCourse(Long courseId, Course updatedCourse, Long authorId) {
+        return getCourseOrThrow(courseId)
+            .flatMap(course ->
+                this.accessService.hasEditAccessOrThrow(courseId, authorId)
+                    .then(Mono.defer(() -> {
+                        course.setTitle(updatedCourse.getTitle());
+                        course.setDescription(updatedCourse.getDescription());
+                        course.setImageUrl(updatedCourse.getImageUrl());
+                        return courseRepository.save(course);
+                    }))
+            );
     }
 
     /**
      * Удалить курс
      */
-    public Mono<Void> deleteCourse(Long id, Long authorId) {
-        return courseRepository.findById(id)
-            .flatMap(course -> {
-                if (!course.getAuthorId().equals(authorId)) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your course"));
-                }
-                return courseRepository.delete(course);
-            });
+    public Mono<Void> deleteCourse(Long courseId, Long authorId) {
+        return getCourseOrThrow(courseId)
+            .flatMap(course ->
+                accessService.hasEditAccessOrThrow(courseId, authorId)
+                    .then(courseRepository.delete(course))
+            );
     }
 
     /**
@@ -89,7 +96,7 @@ public class CourseService {
     /**
      * Получить структуру курса (курс + разделы + видео)
      */
-    public Mono<CourseFullDto> getFullCourse(Long courseId, Long userId) {
+    public Mono<CourseFullDto> getFullCourse(Long courseId, Long userId) { // TODO: no need
         return getCourse(courseId, userId) // проверка доступа к курсу
             .flatMap(course ->
                 sectionRepository.findByCourseIdOrderByPositionAsc(courseId)
@@ -133,12 +140,5 @@ public class CourseService {
                     .collectList()
                     .map(sections -> new CourseFullDto(course, sections))
             );
-    }
-
-    private Mono<Boolean> hasAccess(Course course, Long userId) {
-        if (course.getAuthorId().equals(userId)) {
-            return Mono.just(true);
-        }
-        return accessRepository.existsByCourseIdAndUserId(course.getId(), userId);
     }
 }

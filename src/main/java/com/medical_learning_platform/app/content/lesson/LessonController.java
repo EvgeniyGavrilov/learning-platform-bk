@@ -1,6 +1,5 @@
 package com.medical_learning_platform.app.content.lesson;
 
-import com.medical_learning_platform.app.content.lesson.dto.LessonDto;
 import com.medical_learning_platform.app.content.lesson.entity.Lesson;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,33 +59,31 @@ public class LessonController {
     ) {
         log.info("Delete lesson {} in course {}, section {}", lessonId, courseId, sectionId);
         Long authorId = Long.parseLong((String) authentication.getPrincipal());
-        return lessonService.deleteLesson(lessonId, authorId);
+        return lessonService.deleteLesson(courseId, sectionId, lessonId, authorId);
     }
 
     /**
-     * Получить все уроки секции (без ссылок на видео для пользователей без доступа)
+     * Получить все уроки секции
      */
     @GetMapping
-    public Flux<LessonDto> getLessons(
+    public Flux<Lesson> getLessons(
         @PathVariable Long courseId,
         @PathVariable Long sectionId,
         Authentication authentication
     ) {
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return lessonService.getLessonsBySection(sectionId, userId);
+        return lessonService.getLessons(sectionId);
     }
 
     /**
      * Получить конкретный урок
      */
     @GetMapping("/{lessonId}")
-    public Mono<LessonDto> getLesson(
+    public Mono<Lesson> getLesson(
         @PathVariable Long courseId,
         @PathVariable Long sectionId,
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return lessonService.getLessonById(sectionId, lessonId, userId);
+        return lessonService.getLesson(lessonId);
     }
 }

@@ -67,10 +67,10 @@ public class CourseController {
     /**
      * Получить структуру курса целиком
      */
-    @GetMapping("/{courseId}/full")
-    public Mono<CourseFullDto> getFullCourse(@PathVariable Long courseId, Authentication authentication) {
-        Long authorId = Long.parseLong((String) authentication.getPrincipal());
-        return courseService.getFullCourse(courseId, authorId);
-    }
+//    @GetMapping("/{courseId}/full")
+//    public Mono<CourseFullDto> getFullCourse(@PathVariable Long courseId, Authentication authentication) { // TODO: need?
+//        Long authorId = Long.parseLong((String) authentication.getPrincipal());
+//        return courseService.getFullCourse(courseId, authorId);
+//    }
 }
 

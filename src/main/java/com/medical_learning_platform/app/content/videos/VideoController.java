@@ -1,6 +1,5 @@
 package com.medical_learning_platform.app.content.videos;
 
-
 import com.medical_learning_platform.app.content.videos.entity.Video;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
