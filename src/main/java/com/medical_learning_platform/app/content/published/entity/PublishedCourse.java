@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.content.lesson.entity;
+package com.medical_learning_platform.app.content.published.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,14 +11,12 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table("lessons")
-public class Lesson {
+@Table("published_courses")
+public class PublishedCourse {
     @Id
     private Long id;
-    private Long sectionId;
-    private String title;
-    private String description;
-    private int position;
-    private LocalDateTime createdAt; // TODO: add updated field
+    private Long courseId;
+    private Long authorId;
+    private LocalDateTime publishedAt;
 }
 

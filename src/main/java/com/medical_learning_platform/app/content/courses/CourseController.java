@@ -1,7 +1,6 @@
 package com.medical_learning_platform.app.content.courses;
 
 
-import com.medical_learning_platform.app.content.courses.dto.CourseFullDto;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,17 +59,12 @@ public class CourseController {
      * Получить все курсы автора
      */
     @GetMapping("/author/{authorId}")
-    public Flux<Course> getCoursesByAuthor(@PathVariable Long authorId) {
-        return courseService.getCoursesByAuthor(authorId);
+    public Flux<Course> getCoursesByAuthor(@PathVariable Long authorId, Authentication authentication) {
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        if(authorId.equals(userId)) {
+            return courseService.getCoursesByAuthor(authorId);
+        }
+        return courseService.getAllPublishedCoursesByAuthor(authorId);
     }
-
-    /**
-     * Получить структуру курса целиком
-     */
-//    @GetMapping("/{courseId}/full")
-//    public Mono<CourseFullDto> getFullCourse(@PathVariable Long courseId, Authentication authentication) { // TODO: need?
-//        Long authorId = Long.parseLong((String) authentication.getPrincipal());
-//        return courseService.getFullCourse(courseId, authorId);
-//    }
 }
 

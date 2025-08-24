@@ -64,3 +64,12 @@ CREATE TABLE IF NOT EXISTS course_access (
     expires_at TIMESTAMP NULL,
     UNIQUE (user_id, course_id)
 );
+
+CREATE TABLE IF NOT EXISTS published_courses (
+    id BIGSERIAL PRIMARY KEY,
+    course_id BIGINT NOT NULL UNIQUE,
+    author_id BIGINT NOT NULL,
+    published_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);

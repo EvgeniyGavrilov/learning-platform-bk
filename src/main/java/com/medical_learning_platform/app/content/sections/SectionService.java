@@ -3,6 +3,8 @@ package com.medical_learning_platform.app.content.sections;
 
 import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.CourseService;
+import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
+import com.medical_learning_platform.app.content.published.PublishedCourseService;
 import com.medical_learning_platform.app.content.sections.entity.Section;
 import com.medical_learning_platform.app.content.sections.repository.SectionRepository;
 import lombok.AllArgsConstructor;
@@ -20,13 +22,15 @@ import reactor.core.publisher.Mono;
 public class SectionService {
 
     private final CourseService courseService;
+    private final CourseRepository courseRepository;
     private final SectionRepository sectionRepository;
     private final AccessService accessService;
+    private final PublishedCourseService publishedCourseService;
 
     /**
      * Проверка наличия секции
      */
-    public Mono<Section> getSectionOrThrow(Long courseId) {
+    public Mono<Section> getSectionIfExistOrThrow(Long courseId) {
         return sectionRepository.findById(courseId)
             .switchIfEmpty(Mono.error(new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Section not found"
@@ -53,7 +57,7 @@ public class SectionService {
     public Mono<Section> updateSection(Long courseId, Section updatedSection, Long authorId) {
         return courseService.getCourseOrThrow(courseId)
             .then(
-                getSectionOrThrow(updatedSection.getId())
+                getSectionIfExistOrThrow(updatedSection.getId())
                     .flatMap(section ->
                         this.accessService.hasEditAccessOrThrow(courseId, authorId)
                             .then(Mono.defer(() -> {
@@ -82,13 +86,42 @@ public class SectionService {
      * Получить раздел в курс
      */
     public Mono<Section> getSection(Long courseId, Long sectionId, Long userId) {
-        return getSectionOrThrow(sectionId);
+        return getSectionIfExistOrThrow(sectionId)
+            .flatMap(section -> this.isSectionBelongToCourse(section.getId(), courseId)
+                .flatMap(isBelong -> {
+                    if(isBelong) {
+                        publishedCourseService.isCoursePublished(courseId)
+                            .flatMap(isPublished -> {
+                                if(isPublished) {
+                                    return Mono.just(section);
+                                }
+
+                                return accessService.hasEditAccessOrThrow(courseId, userId)
+                                    .then(Mono.just(section));
+                            });
+                    }
+                    return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found"));
+                }));
     }
 
     /**
      * Удалить все разделы в курс
      */
     public Flux<Section> getSections(Long courseId, Long userId) {
-        return sectionRepository.findByCourseIdOrderByPositionAsc(courseId);
+        return publishedCourseService.isCoursePublished(courseId)
+            .flatMapMany(isPublished -> {
+                if(isPublished) {
+                    return sectionRepository.findByCourseIdOrderByPositionAsc(courseId);
+                }
+
+                return accessService.hasEditAccessOrThrow(courseId, userId)
+                    .thenMany(
+                        sectionRepository.findByCourseIdOrderByPositionAsc(courseId)
+                    );
+            });
+    }
+
+    public Mono<Boolean> isSectionBelongToCourse(Long sectionId, Long courseId) {
+        return courseRepository.findById(sectionId).flatMap(course -> Mono.just(course.getId().equals(courseId)));
     }
 }

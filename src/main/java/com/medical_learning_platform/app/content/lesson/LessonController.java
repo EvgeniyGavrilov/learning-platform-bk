@@ -44,7 +44,7 @@ public class LessonController {
     ) {
         log.info("Update lesson {} in course {}, section {}", lessonId, courseId, sectionId);
         Long authorId = Long.parseLong((String) authentication.getPrincipal());
-        return lessonService.updateLesson(lessonId, updatedLesson, authorId);
+        return lessonService.updateLesson(updatedLesson, authorId);
     }
 
     /**
@@ -71,7 +71,9 @@ public class LessonController {
         @PathVariable Long sectionId,
         Authentication authentication
     ) {
-        return lessonService.getLessons(sectionId);
+        log.info("Get lessons in course {}, section {}", courseId, sectionId);
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        return lessonService.getLessons(sectionId, courseId, userId);
     }
 
     /**
@@ -84,6 +86,8 @@ public class LessonController {
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        return lessonService.getLesson(lessonId);
+        log.info("Get lesson {} in course {}, section {}", lessonId, courseId, sectionId);
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        return lessonService.getLesson(lessonId, courseId, userId);
     }
 }

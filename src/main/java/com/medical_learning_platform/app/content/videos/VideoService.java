@@ -139,26 +139,31 @@ public class VideoService {
         );
     }
 
-    public Mono<ResponseEntity<Resource>> serveVideo(Long courseId, Long sectionId, Long lessonId, String filename) {
-        Path filePath = VideoFileUtils.UPLOAD_DIR
-            .resolve("course_" + courseId)
-            .resolve("section_" + sectionId)
-            .resolve("lesson_" + lessonId)
-            .resolve(filename)
-            .normalize();
+    public Mono<ResponseEntity<Resource>> serveVideo(Long courseId, Long sectionId, Long lessonId, String filename, Long userId) {
+        return accessService.hasReadAccessOrThrow(courseId, userId).then(
+            Mono.defer(() -> {
+                Path filePath = VideoFileUtils.UPLOAD_DIR
+                    .resolve("course_" + courseId)
+                    .resolve("section_" + sectionId)
+                    .resolve("lesson_" + lessonId)
+                    .resolve(filename)
+                    .normalize();
 
-        FileSystemResource resource = new FileSystemResource(filePath.toFile());
+                FileSystemResource resource = new FileSystemResource(filePath.toFile());
 
-        if (!resource.exists()) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found"));
-        }
+                if (!resource.exists()) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found"));
+                }
 
-        MediaType mediaType = getMediaType(filename);
+                MediaType mediaType = getMediaType(filename);
 
-        return Mono.just(
-            ResponseEntity.ok()
-                .contentType(mediaType)
-                .body(resource)
+                return Mono.just(
+                    ResponseEntity.ok()
+                        .contentType(mediaType)
+                        .body(resource)
+                );
+
+            })
         );
     }
 

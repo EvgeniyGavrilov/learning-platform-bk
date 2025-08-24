@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .pathMatchers("/api/video/uploaded/{filename:.+}").authenticated()
                 .pathMatchers("/api/video/upload").authenticated()
                 .pathMatchers("/api/courses/**").authenticated()
+                .pathMatchers("/api/publications").permitAll()
+                .pathMatchers("/api/publications/**").permitAll()
                 .pathMatchers("/api/**").permitAll()
                 .anyExchange().permitAll()
             )

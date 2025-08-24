@@ -5,6 +5,7 @@ import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.dto.CourseFullDto;
 import com.medical_learning_platform.app.content.lesson.dto.LessonDto;
 import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
+import com.medical_learning_platform.app.content.published.PublishedCourseService;
 import com.medical_learning_platform.app.content.sections.dto.SectionFullDto;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
@@ -27,10 +28,8 @@ import java.time.LocalDateTime;
 public class CourseService {
 
     private final CourseRepository courseRepository;
-    private final SectionRepository sectionRepository;
-    private final VideoRepository videoRepository;
-    private final LessonRepository lessonRepository;
     private final AccessService accessService;
+    private final PublishedCourseService publishedCourseService;
 
     /**
      * Проверка наличия курса
@@ -70,7 +69,8 @@ public class CourseService {
     /**
      * Удалить курс
      */
-    public Mono<Void> deleteCourse(Long courseId, Long authorId) { // TODO: don't delete dir's
+    public Mono<Void> deleteCourse(Long courseId, Long authorId) {
+        // TODO: Добавить удаление директорий
         return getCourseOrThrow(courseId)
             .flatMap(course ->
                 accessService.hasEditAccessOrThrow(courseId, authorId)
@@ -83,62 +83,32 @@ public class CourseService {
      */
     public Mono<Course> getCourse(Long courseId, Long userId) {
         return courseRepository.findById(courseId)
+            .flatMap(course ->
+                publishedCourseService.isCoursePublished(courseId)
+                    .flatMap(isPublished -> {
+                        if(isPublished) {
+                            return Mono.just(course);
+                        }
+
+                        return accessService.hasEditAccessOrThrow(courseId, userId).then(
+                            Mono.just(course)
+                        );
+                    })
+            )
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")));
     }
 
     /**
-     * Получить все курсы автора
+     * Получить все опубликованных курсы автора
      */
     public Flux<Course> getCoursesByAuthor(Long authorId) {
         return courseRepository.findByAuthorId(authorId);
     }
 
     /**
-     * Получить структуру курса (курс + разделы + видео)
+     * Получить все курсы автора
      */
-    public Mono<CourseFullDto> getFullCourse(Long courseId, Long userId) { // TODO: no need
-        return getCourse(courseId, userId) // проверка доступа к курсу
-            .flatMap(course ->
-                sectionRepository.findByCourseIdOrderByPositionAsc(courseId)
-                    .flatMap(section ->
-                        // получаем уроки секции
-                        lessonRepository.findBySectionIdOrderByPositionAsc(section.getId())
-                            .flatMap(lesson ->
-                                // получаем видео урока (1 видео на урок)
-                                videoRepository.findByLessonId(lesson.getId())
-                                    .map(video -> {
-                                        VideoDto videoDto = new VideoDto(
-                                            video.getId(),
-                                            video.getLessonId(),
-                                            video.getFilename(),
-                                            video.getUrl(),
-                                            video.getUploadedAt()
-                                        );
-                                        return new LessonDto(
-                                            lesson.getId(),
-                                            lesson.getSectionId(),
-                                            lesson.getTitle(),
-                                            lesson.getDescription(),
-                                            lesson.getPosition(),
-                                            lesson.getCreatedAt(),
-                                            videoDto
-                                        );
-                                    })
-                                    .switchIfEmpty(Mono.just(new LessonDto(
-                                        lesson.getId(),
-                                        lesson.getSectionId(),
-                                        lesson.getTitle(),
-                                        lesson.getDescription(),
-                                        lesson.getPosition(),
-                                        lesson.getCreatedAt(),
-                                        null
-                                    )))
-                            )
-                            .collectList()
-                            .map(lessons -> new SectionFullDto(section, lessons))
-                    )
-                    .collectList()
-                    .map(sections -> new CourseFullDto(course, sections))
-            );
+    public Flux<Course> getAllPublishedCoursesByAuthor(Long authorId) {
+        return publishedCourseService.allPublishedCourses(authorId);
     }
 }

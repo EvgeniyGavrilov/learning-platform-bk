@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
@@ -72,8 +73,10 @@ public class VideoUploadController {
         @PathVariable Long courseId,
         @PathVariable Long sectionId,
         @PathVariable Long lessonId,
-        @PathVariable String filename
+        @PathVariable String filename,
+        Authentication authentication
     ){
-        return videoService.serveVideo(courseId, sectionId, lessonId, filename);
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        return videoService.serveVideo(courseId, sectionId, lessonId, filename, userId);
     }
 }
