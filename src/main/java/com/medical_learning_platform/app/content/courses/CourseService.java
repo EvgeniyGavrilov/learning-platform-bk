@@ -15,11 +15,13 @@ import com.medical_learning_platform.app.content.videos.repository.VideoReposito
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -81,7 +83,7 @@ public class CourseService {
     /**
      * Получить курс
      */
-    public Mono<Course> getCourse(Long courseId, Long userId) {
+    public Mono<Course> getCourse(Long courseId, Mono<Principal> principal) {
         return courseRepository.findById(courseId)
             .flatMap(course ->
                 publishedCourseService.isCoursePublished(courseId)
@@ -90,9 +92,17 @@ public class CourseService {
                             return Mono.just(course);
                         }
 
-                        return accessService.hasEditAccessOrThrow(courseId, userId).then(
-                            Mono.just(course)
-                        );
+                        return principal
+                            .map(Principal::getName)
+                            .map(Long::parseLong)
+                            .flatMap(userId ->
+                                accessService.hasEditAccessOrThrow(courseId, userId).then(
+                                    Mono.just(course)
+                                )
+                            )
+                            .switchIfEmpty(
+                                Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"))
+                            );
                     })
             )
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found")));

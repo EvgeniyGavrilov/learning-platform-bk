@@ -5,9 +5,12 @@ import com.medical_learning_platform.app.content.courses.entity.Course;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
 
 @Slf4j
 @AllArgsConstructor
@@ -30,6 +33,7 @@ public class CourseController {
             @RequestBody Course updatedCourse,
             Authentication authentication
     ) {
+        log.info("Update course: {}", updatedCourse.toString());
         Long userId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.updateCourse(id, updatedCourse, userId);
     }
@@ -42,6 +46,7 @@ public class CourseController {
         @PathVariable Long id,
         Authentication authentication
     ) {
+        log.info("Delete course: {}", id);
         Long authorId = Long.parseLong((String) authentication.getPrincipal());
         return courseService.deleteCourse(id, authorId);
     }
@@ -50,9 +55,12 @@ public class CourseController {
      * Получить курс по id
      */
     @GetMapping("/{courseId}")
-    public Mono<Course> getCourse(@PathVariable Long courseId, Authentication authentication) {
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return courseService.getCourse(courseId, userId);
+    public Mono<Course> getCourse(
+        @PathVariable Long courseId,
+        @AuthenticationPrincipal Mono<Principal> principal
+    ) {
+        log.info("Get course: {}", courseId);
+        return courseService.getCourse(courseId, principal);
     }
 
     /**
@@ -60,6 +68,7 @@ public class CourseController {
      */
     @GetMapping("/author/{authorId}")
     public Flux<Course> getCoursesByAuthor(@PathVariable Long authorId, Authentication authentication) {
+        log.info("Get courses by author: {}", authorId);
         Long userId = Long.parseLong((String) authentication.getPrincipal());
         if(authorId.equals(userId)) {
             return courseService.getCoursesByAuthor(authorId);

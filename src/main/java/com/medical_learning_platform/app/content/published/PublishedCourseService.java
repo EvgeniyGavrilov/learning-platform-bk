@@ -3,6 +3,8 @@ package com.medical_learning_platform.app.content.published;
 import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.CourseService;
 import com.medical_learning_platform.app.content.courses.entity.Course;
+import com.medical_learning_platform.app.content.courses.entity.CourseAccess;
+import com.medical_learning_platform.app.content.courses.repository.CourseAccessRepository;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
 import com.medical_learning_platform.app.content.published.entity.PublishedCourse;
 import com.medical_learning_platform.app.content.published.repository.PublishedCourseRepository;
@@ -14,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -22,6 +25,7 @@ import java.time.LocalDateTime;
 public class PublishedCourseService {
 
     private final PublishedCourseRepository publishedCourseRepository;
+    private final CourseAccessRepository courseAccessRepository;
     private final CourseRepository courseRepository;
     private final AccessService accessService;
 
@@ -97,5 +101,35 @@ public class PublishedCourseService {
             )
         );
     }
+
+    public Mono<Boolean> isUserHaveAccess(Long courseId, Long userId) {
+        return accessService.hasReadAccessOrThrow(courseId, userId);
+//        return courseAccessRepository.existsByCourseIdAndUserId(courseId, userId);
+    }
+
+    public Mono<Boolean> buyCourse(Long courseId, Mono<Principal> principal) {
+        return principal
+            .map(Principal::getName)
+            .map(Long::parseLong)
+            .doOnNext(userId -> log.info("User id: {}", userId))
+            .flatMap(userId ->
+                courseAccessRepository.existsByCourseIdAndUserId(courseId, userId)
+                    .flatMap(isExists -> {
+                        if (isExists) {
+                            return Mono.error(new ResponseStatusException(
+                                    HttpStatus.CONFLICT, "Course is already bought"
+                            ));
+                        }
+                        // если доступа нет → создаём новую запись
+                        return courseAccessRepository.save(
+                                new CourseAccess(null, userId, courseId, LocalDateTime.now(), null)
+                        ).thenReturn(true);
+                    })
+            )
+            .switchIfEmpty(Mono.error(new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "User not found"
+            )));
+    }
+
 }
 

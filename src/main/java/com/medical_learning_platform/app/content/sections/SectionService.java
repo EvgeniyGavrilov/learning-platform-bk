@@ -15,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
+
 
 @Slf4j
 @Service
@@ -105,18 +107,25 @@ public class SectionService {
     }
 
     /**
-     * Удалить все разделы в курс
+     * Взять все разделы в курс
      */
-    public Flux<Section> getSections(Long courseId, Long userId) {
+    public Flux<Section> getSections(Long courseId, Mono<Principal> principal) {
         return publishedCourseService.isCoursePublished(courseId)
             .flatMapMany(isPublished -> {
                 if(isPublished) {
                     return sectionRepository.findByCourseIdOrderByPositionAsc(courseId);
                 }
 
-                return accessService.hasEditAccessOrThrow(courseId, userId)
-                    .thenMany(
-                        sectionRepository.findByCourseIdOrderByPositionAsc(courseId)
+                return principal
+                    .map(Principal::getName)
+                    .map(Long::parseLong)
+                    .flatMapMany(userId ->
+                        accessService.hasEditAccessOrThrow(courseId, userId).thenMany(
+                            sectionRepository.findByCourseIdOrderByPositionAsc(courseId)
+                        )
+                    )
+                    .switchIfEmpty(
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sections not found"))
                     );
             });
     }

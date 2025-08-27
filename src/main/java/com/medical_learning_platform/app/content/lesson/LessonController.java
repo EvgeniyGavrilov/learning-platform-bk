@@ -4,9 +4,12 @@ import com.medical_learning_platform.app.content.lesson.entity.Lesson;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
 
 @Slf4j
 @RestController
@@ -69,11 +72,10 @@ public class LessonController {
     public Flux<Lesson> getLessons(
         @PathVariable Long courseId,
         @PathVariable Long sectionId,
-        Authentication authentication
+        @AuthenticationPrincipal Mono<Principal> principal
     ) {
         log.info("Get lessons in course {}, section {}", courseId, sectionId);
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return lessonService.getLessons(sectionId, courseId, userId);
+        return lessonService.getLessons(sectionId, courseId, principal);
     }
 
     /**

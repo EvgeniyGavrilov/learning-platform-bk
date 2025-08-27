@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.Path;
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -136,16 +137,23 @@ public class LessonService {
     /**
      * Взять уроки
      */
-    public Flux<Lesson> getLessons(Long sectionId, Long courseId, Long userId) {
+    public Flux<Lesson> getLessons(Long sectionId, Long courseId, Mono<Principal> principal) {
         return publishedCourseService.isCoursePublished(courseId)
             .flatMapMany(isPublished -> {
                 if(isPublished) {
                     return lessonRepository.findBySectionIdOrderByPositionAsc(sectionId);
                 }
 
-                return accessService.hasEditAccessOrThrow(courseId, userId)
-                    .thenMany(
-                        lessonRepository.findBySectionIdOrderByPositionAsc(sectionId)
+                return principal
+                    .map(Principal::getName)
+                    .map(Long::parseLong)
+                    .flatMapMany(userId ->
+                        accessService.hasEditAccessOrThrow(courseId, userId).thenMany(
+                            lessonRepository.findBySectionIdOrderByPositionAsc(sectionId)
+                        )
+                    )
+                    .switchIfEmpty(
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lessons not found"))
                     );
             });
 

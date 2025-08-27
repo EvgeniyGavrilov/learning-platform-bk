@@ -5,9 +5,12 @@ import com.medical_learning_platform.app.content.sections.entity.Section;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
 
 @Slf4j
 @AllArgsConstructor
@@ -32,7 +35,7 @@ public class SectionController {
     }
 
     /**
-     * Добавить раздел в курс
+     * Обновить раздел в курс
      */
     @PutMapping("/{courseId}/sections")
     public Mono<Section> updateSection(
@@ -78,10 +81,9 @@ public class SectionController {
     @GetMapping("/{courseId}/sections")
     public Flux<Section> getSections(
             @PathVariable Long courseId,
-            Authentication authentication
+            @AuthenticationPrincipal Mono<Principal> principal
     ) {
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return sectionService.getSections(courseId, userId);
+        return sectionService.getSections(courseId, principal);
     }
 }
 

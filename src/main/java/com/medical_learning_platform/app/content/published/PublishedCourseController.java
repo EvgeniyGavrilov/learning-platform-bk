@@ -6,9 +6,13 @@ import com.medical_learning_platform.app.content.published.entity.PublishedCours
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -54,6 +58,34 @@ public class PublishedCourseController {
         log.info("Is courses {} published?", courseId);
         Long userId = Long.parseLong((String) authentication.getPrincipal());
         return publishedCourseService.isCoursePublished(courseId, userId);
+    }
+
+    @GetMapping("/access/{courseId}")
+    public Mono<Boolean> isUserHaveAccess (
+        @PathVariable Long courseId,
+        Authentication authentication
+    ) {
+        log.info("Check course access {}", courseId);
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return Mono.just(false); // пользователь не аутентифицирован
+        }
+
+        String principal = authentication.getPrincipal().toString();
+        Long userId = Long.parseLong(principal);
+
+        return publishedCourseService.isUserHaveAccess(courseId, userId).onErrorResume(er -> Mono.just(false));
+    }
+
+    @PostMapping("/buy/{courseId}")
+    public Mono<Boolean> buyCourse (
+        @PathVariable Long courseId,
+        Authentication authentication,
+        @AuthenticationPrincipal Mono<Principal> principal
+    ) {
+        log.info("Buy course {}", courseId);
+
+        return publishedCourseService.buyCourse(courseId, principal);
     }
 }
 
