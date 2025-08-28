@@ -1,0 +1,4 @@
+stripe:
+  secret-key: sk_test_51S0hK0RqhzHl8CPHGxC6Adxz7UlhwyL4ghoobsCRSyCiaEmon5ZVbWHJaY24EqAgc5iQ19P51191S8EAnicKuN2200utVu8eeE     # Test key private
+  public-key: pk_test_51S0hK0RqhzHl8CPHX9KvR4XjBRZHrM3qnHtvj2VC5Evasr3wAO6S6hOLdk45Z5rcJh32MDwVWt8Dro40cxYQEQyJ00CZNpblVP     # Test key public
+  webhook-secret: whsec_5f165fd43efbcea8b636cf9cd022039148ab04ab2735a5cce8ad65082c52ee6c
