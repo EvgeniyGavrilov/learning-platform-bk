@@ -44,9 +44,16 @@ public class PublishedCourseController {
     }
 
     @GetMapping
-    public Flux<Course> allPublishedCourses () {
+//    public Flux<Course> allPublishedCourses (@AuthenticationPrincipal Mono<Principal> principal) {
+    public Flux<Course> allPublishedCourses (Authentication authentication) {
         log.info("All published courses");
-        return publishedCourseService.allPublishedCourses();
+
+        Long userId = null;
+        if (authentication != null && authentication.getPrincipal() != null) {
+            userId = Long.parseLong((String) authentication.getPrincipal());
+        }
+
+        return publishedCourseService.allPublishedCourses(userId);
     };
 
 

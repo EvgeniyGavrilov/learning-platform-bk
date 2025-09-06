@@ -2,7 +2,7 @@ package com.medical_learning_platform.app.content.lesson;
 
 import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.CourseService;
-import com.medical_learning_platform.app.content.file_loader.VideoFileUtils;
+import com.medical_learning_platform.app.content.file_loader.UploadFileUtils;
 import com.medical_learning_platform.app.content.lesson.entity.Lesson;
 import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
 import com.medical_learning_platform.app.content.published.PublishedCourseService;
@@ -114,13 +114,13 @@ public class LessonService {
                 .then(
                     videoRepository.findByLessonId(lessonId)
                         .flatMap(video -> {
-                            Path videoPath = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId)
+                            Path videoPath = UploadFileUtils.getLessonDir(courseId, sectionId, lessonId)
                                     .resolve(video.getFilename());
-                            return VideoFileUtils.deleteFile(videoPath)
+                            return UploadFileUtils.deleteFile(videoPath)
                                     .then(videoRepository.delete(video));
                         })
                         .then(Mono.defer(() ->
-                            VideoFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId)
+                            UploadFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId)
                         ))
                         .then(lessonRepository.deleteById(lessonId))
                 )

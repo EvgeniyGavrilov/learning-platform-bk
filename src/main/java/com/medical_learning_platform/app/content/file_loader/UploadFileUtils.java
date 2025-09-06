@@ -1,6 +1,7 @@
 package com.medical_learning_platform.app.content.file_loader;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -14,7 +15,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Service
-public class VideoFileUtils {
+public class UploadFileUtils {
 
     public static final Path UPLOAD_DIR = Paths.get("uploads");
 
@@ -73,5 +74,23 @@ public class VideoFileUtils {
                 }
             }
         }).subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    public static Mono<String> saveCourseImage(Long courseId, FilePart filePart) {
+        Path courseDir = UPLOAD_DIR.resolve("course_" + courseId + "/cover");
+        Path imagePath = courseDir.resolve(filePart.filename());
+
+        return Mono.fromRunnable(() -> {
+            try {
+                if (!Files.exists(courseDir)) {
+                    Files.createDirectories(courseDir);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create course directory: " + courseDir, e);
+            }
+        }).then(
+            filePart.transferTo(imagePath.toFile())
+                .thenReturn("/uploads/course_" + courseId + "/cover/" + imagePath.getFileName())
+        );
     }
 }

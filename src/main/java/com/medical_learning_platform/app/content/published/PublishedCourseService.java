@@ -1,7 +1,6 @@
 package com.medical_learning_platform.app.content.published;
 
 import com.medical_learning_platform.app.content.AccessService;
-import com.medical_learning_platform.app.content.courses.CourseService;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.entity.CourseAccess;
 import com.medical_learning_platform.app.content.courses.repository.CourseAccessRepository;
@@ -77,14 +76,40 @@ public class PublishedCourseService {
         return publishedCourseRepository.existsByCourseId(courseId);
     }
 
-    public Flux<Course> allPublishedCourses() {
-        return publishedCourseRepository.findAll().flatMap(publishedCourse ->
-            courseRepository.findById(
-                publishedCourse.getCourseId()
-            )
-        );
+    public Flux<Course> allPublishedCourses(Long userId) {
+        if(userId == null) {
+            return publishedCourseRepository.findAll()
+                .flatMap(publishedCourse ->
+                    courseRepository.findById(publishedCourse.getCourseId())
+                );
+        } else {
+            return publishedCourseRepository.findAllExcludingAuthor(userId)
+                .flatMap(publishedCourse ->
+                        courseRepository.findById(publishedCourse.getCourseId())
+                );
+        }
     }
-    public Flux<Course> allPublishedCourses(Long authorId) {
+
+    public Flux<Course> allPublishedCourses(Mono<Principal> principal) {
+        return principal
+            .map(Principal::getName)
+            .map(Long::parseLong)
+            .doOnNext(user -> log.info("User id: {}", user))
+            .flatMapMany(userId ->
+                publishedCourseRepository.findAllExcludingAuthor(userId)
+                    .doOnNext(publishedCourse -> log.info("publishedCourse excluded by author: {}", publishedCourse))
+            )
+            // Если авторизованного пользователя нет, берём все курсы
+            .switchIfEmpty(
+                publishedCourseRepository.findAll().doOnNext(c -> log.info("findAll publishedCourse"))
+            )
+            // Далее достаём сами Course по courseId
+            .flatMap(publishedCourse ->
+                courseRepository.findById(publishedCourse.getCourseId()).doOnNext(c -> log.info("Get filtered"))
+            );
+    }
+
+    public Flux<Course> allPublishedCoursesByAuthor(Long authorId) {
         return publishedCourseRepository.findByAuthorId(authorId).flatMapMany(publishedCourse ->
             courseRepository.findById(
                     publishedCourse.getCourseId()

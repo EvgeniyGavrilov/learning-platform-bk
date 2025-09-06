@@ -2,20 +2,14 @@ package com.medical_learning_platform.app.content.courses;
 
 
 import com.medical_learning_platform.app.content.AccessService;
-import com.medical_learning_platform.app.content.courses.dto.CourseFullDto;
-import com.medical_learning_platform.app.content.lesson.dto.LessonDto;
-import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
+import com.medical_learning_platform.app.content.file_loader.UploadFileUtils;
 import com.medical_learning_platform.app.content.published.PublishedCourseService;
-import com.medical_learning_platform.app.content.sections.dto.SectionFullDto;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.sections.repository.SectionRepository;
-import com.medical_learning_platform.app.content.videos.dto.VideoDto;
-import com.medical_learning_platform.app.content.videos.repository.VideoRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -46,10 +40,16 @@ public class CourseService {
     /**
      * Создать курс
      */
-    public Mono<Course> createCourse(Course course, Long authorId) {
+    public Mono<Course> createCourse(Course course, Long authorId, FilePart image) {
         course.setAuthorId(authorId);
         course.setCreatedAt(LocalDateTime.now());
-        return courseRepository.save(course);
+        return courseRepository.save(course).flatMap(savedCourse ->
+            UploadFileUtils.saveCourseImage(savedCourse.getId(), image)
+                .flatMap(imageUrl -> {
+                    savedCourse.setImageUrl(imageUrl);
+                    return courseRepository.save(savedCourse);
+                })
+        );
     }
 
     /**
@@ -119,6 +119,6 @@ public class CourseService {
      * Получить все курсы автора
      */
     public Flux<Course> getAllPublishedCoursesByAuthor(Long authorId) {
-        return publishedCourseService.allPublishedCourses(authorId);
+        return publishedCourseService.allPublishedCoursesByAuthor(authorId);
     }
 }

@@ -73,3 +73,22 @@ CREATE TABLE IF NOT EXISTS published_courses (
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS currencies (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(3) NOT NULL UNIQUE,   -- ISO код (USD, EUR, ILS)
+    name VARCHAR(50) NOT NULL,         -- Полное название (US Dollar)
+    symbol VARCHAR(5) NOT NULL,        -- $, €, ₪
+    created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS course_prices (
+    id BIGSERIAL PRIMARY KEY,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    currency_id BIGINT NOT NULL REFERENCES currencies(id),
+    country VARCHAR(2),                 -- ISO код страны (например, "US", "IL", "DE")
+    amount DECIMAL(10, 2) NOT NULL,     -- Цена
+    created_at TIMESTAMP DEFAULT now(),
+    UNIQUE(course_id, currency_id, country) -- гарантирует уникальность
+);
+

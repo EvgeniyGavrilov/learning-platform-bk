@@ -4,6 +4,8 @@ package com.medical_learning_platform.app.content.courses;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +22,16 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @PostMapping
-    public Mono<Course> createCourse(@RequestBody Course course, Authentication authentication) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<Course> createCourse(
+            @RequestBody Course course,
+            @RequestPart("image") FilePart image,
+            Authentication authentication
+    ) {
         log.info("Create course: {}", course.toString());
         Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return courseService.createCourse(course, userId);
+
+        return courseService.createCourse(course, userId, image);
     }
 
     @PutMapping("/{id}")

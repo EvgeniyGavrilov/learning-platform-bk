@@ -3,7 +3,7 @@ package com.medical_learning_platform.app.content.videos;
 
 import com.medical_learning_platform.app.content.AccessService;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.file_loader.VideoFileUtils;
+import com.medical_learning_platform.app.content.file_loader.UploadFileUtils;
 import com.medical_learning_platform.app.content.lesson.entity.Lesson;
 import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
 import com.medical_learning_platform.app.content.sections.repository.SectionRepository;
@@ -46,7 +46,7 @@ public class VideoService {
             validateHierarchy(courseId, sectionId, lessonId)
                 .flatMap(lesson -> {
                     String filename = file.filename();
-                    Path lessonDir = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId);
+                    Path lessonDir = UploadFileUtils.getLessonDir(courseId, sectionId, lessonId);
 
                     return Mono.fromRunnable(() -> {
                         try {
@@ -59,7 +59,7 @@ public class VideoService {
                     .then(videoRepository.findByLessonId(lessonId)
                         .flatMap(existingVideo -> {
                             Path oldFile = lessonDir.resolve(existingVideo.getFilename());
-                            return VideoFileUtils.deleteFile(oldFile)
+                            return UploadFileUtils.deleteFile(oldFile)
                                     .then(videoRepository.delete(existingVideo));
                         })
                         .then(file.transferTo(lessonDir.resolve(filename)))
@@ -86,7 +86,7 @@ public class VideoService {
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
                     .flatMap(existingVideo -> {
 
-                        Path lessonDir = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId);
+                        Path lessonDir = UploadFileUtils.getLessonDir(courseId, sectionId, lessonId);
                         Path oldFile = lessonDir.resolve(existingVideo.getFilename());
                         Path newFile = lessonDir.resolve(file.filename());
 
@@ -98,7 +98,7 @@ public class VideoService {
                             }
                         })
                         .subscribeOn(Schedulers.boundedElastic())
-                        .then(VideoFileUtils.deleteFile(oldFile))
+                        .then(UploadFileUtils.deleteFile(oldFile))
                         .then(file.transferTo(newFile))
                         .then(Mono.defer(() -> {
                             existingVideo.setFilename(file.filename());
@@ -120,10 +120,10 @@ public class VideoService {
                 .then(videoRepository.findById(videoId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Video not found")))
                 .flatMap(video -> {
-                    Path filePath = VideoFileUtils.getLessonDir(courseId, sectionId, lessonId).resolve(video.getFilename());
-                    return VideoFileUtils.deleteFile(filePath)
+                    Path filePath = UploadFileUtils.getLessonDir(courseId, sectionId, lessonId).resolve(video.getFilename());
+                    return UploadFileUtils.deleteFile(filePath)
                             .then(videoRepository.deleteById(videoId))
-                            .then(VideoFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId));
+                            .then(UploadFileUtils.checkAndDeleteEmptyLessonDir(courseId, sectionId, lessonId));
                 })
         );
     }
@@ -142,7 +142,7 @@ public class VideoService {
     public Mono<ResponseEntity<Resource>> serveVideo(Long courseId, Long sectionId, Long lessonId, String filename, Long userId) {
         return accessService.hasReadAccessOrThrow(courseId, userId).then(
             Mono.defer(() -> {
-                Path filePath = VideoFileUtils.UPLOAD_DIR
+                Path filePath = UploadFileUtils.UPLOAD_DIR
                     .resolve("course_" + courseId)
                     .resolve("section_" + sectionId)
                     .resolve("lesson_" + lessonId)
