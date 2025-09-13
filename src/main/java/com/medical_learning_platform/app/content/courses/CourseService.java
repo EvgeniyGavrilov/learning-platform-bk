@@ -40,16 +40,31 @@ public class CourseService {
     /**
      * Создать курс
      */
-    public Mono<Course> createCourse(Course course, Long authorId, FilePart image) {
+//    public Mono<Course> createCourse(Course course, Long authorId, FilePart image) {
+//        course.setAuthorId(authorId);
+//        course.setCreatedAt(LocalDateTime.now());
+//        return courseRepository.save(course).flatMap(savedCourse ->
+//            UploadFileUtils.saveCourseImage(savedCourse.getId(), image)
+//                .flatMap(imageUrl -> {
+//                    savedCourse.setImageUrl(imageUrl);
+//                    return courseRepository.save(savedCourse);
+//                })
+//        );
+//    }
+    /**
+     * Создать курс
+     */
+    public Mono<Course> createCourse(Course course, Long authorId) {
         course.setAuthorId(authorId);
         course.setCreatedAt(LocalDateTime.now());
-        return courseRepository.save(course).flatMap(savedCourse ->
-            UploadFileUtils.saveCourseImage(savedCourse.getId(), image)
-                .flatMap(imageUrl -> {
-                    savedCourse.setImageUrl(imageUrl);
-                    return courseRepository.save(savedCourse);
-                })
-        );
+        return courseRepository.save(course);
+//        .flatMap(savedCourse ->
+//            UploadFileUtils.saveCourseImage(savedCourse.getId(), image)
+//                .flatMap(imageUrl -> {
+//                    savedCourse.setImageUrl(imageUrl);
+//                    return courseRepository.save(savedCourse);
+//                })
+//        );
     }
 
     /**

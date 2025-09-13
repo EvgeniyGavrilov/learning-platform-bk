@@ -22,16 +22,18 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     public Mono<Course> createCourse(
             @RequestBody Course course,
-            @RequestPart("image") FilePart image,
+//            @RequestPart("image") FilePart image,
             Authentication authentication
     ) {
         log.info("Create course: {}", course.toString());
         Long userId = Long.parseLong((String) authentication.getPrincipal());
 
-        return courseService.createCourse(course, userId, image);
+//        return courseService.createCourse(course, userId, image);
+        return courseService.createCourse(course, userId);
     }
 
     @PutMapping("/{id}")
