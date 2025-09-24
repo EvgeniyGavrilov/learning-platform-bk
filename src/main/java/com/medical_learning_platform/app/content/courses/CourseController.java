@@ -1,6 +1,7 @@
 package com.medical_learning_platform.app.content.courses;
 
 
+import com.medical_learning_platform.app.content.courses.dto.CourseByAuthorDto;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,13 +77,29 @@ public class CourseController {
      * Получить все курсы автора
      */
     @GetMapping("/author/{authorId}")
-    public Flux<Course> getCoursesByAuthor(@PathVariable Long authorId, Authentication authentication) {
+    public Flux<CourseByAuthorDto> getCoursesByAuthor(@PathVariable Long authorId, Authentication authentication) {
         log.info("Get courses by author: {}", authorId);
         Long userId = Long.parseLong((String) authentication.getPrincipal());
         if(authorId.equals(userId)) {
             return courseService.getCoursesByAuthor(authorId);
         }
         return courseService.getAllPublishedCoursesByAuthor(authorId);
+    }
+    /**
+     * Получить все курсы автора
+     */
+    @GetMapping("/author/{authorId}/course/{courseId}")
+    public Mono<CourseByAuthorDto> getCourseByAuthorAndCourseId(
+        @PathVariable Long authorId,
+        @PathVariable Long courseId,
+        Authentication authentication
+    ) {
+        log.info("Get courses by author id {} and course id: {}", authorId, courseId);
+        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        if(authorId.equals(userId)) {
+            return courseService.getCourseByAuthorIdAndCourseId(authorId, courseId);
+        }
+        return Mono.empty();
     }
 }
 

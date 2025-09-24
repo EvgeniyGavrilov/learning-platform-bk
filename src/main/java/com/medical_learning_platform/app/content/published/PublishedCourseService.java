@@ -118,13 +118,17 @@ public class PublishedCourseService {
     }
 
     public Mono<Void> unpublishCourse(Long courseId, Long userId) {
-        return accessService.hasEditAccessOrThrow(courseId, userId).then(
-            courseRepository.findById(courseId).flatMap(course ->
-                publishedCourseRepository.deleteById(courseId)
-            ).switchIfEmpty(
-                Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"))
-            )
-        );
+        return accessService.hasEditAccessOrThrow(courseId, userId)
+            .then(
+                courseRepository
+                    .findById(courseId)
+                    .flatMap(course ->
+                        publishedCourseRepository.deleteByCourseId(courseId)
+                    )
+//                    .switchIfEmpty(
+//                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"))
+//                    )
+            );
     }
 
     public Mono<Boolean> isUserHaveAccess(Long courseId, Long userId) {
@@ -150,10 +154,10 @@ public class PublishedCourseService {
                                 new CourseAccess(null, userId, courseId, LocalDateTime.now(), null)
                         ).thenReturn(true);
                     })
-            )
-            .switchIfEmpty(Mono.error(new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "User not found"
-            )));
+            );
+//            .switchIfEmpty(Mono.error(new ResponseStatusException(
+//                    HttpStatus.NOT_FOUND, "User not found"
+//            )));
     }
 
 }

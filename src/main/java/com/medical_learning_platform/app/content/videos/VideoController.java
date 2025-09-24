@@ -79,8 +79,16 @@ public class VideoController {
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
-        Long userId = Long.parseLong((String) authentication.getPrincipal());
-        return videoService.getVideo(courseId, sectionId, lessonId, userId);
+//        Long userId = Long.parseLong((String) authentication.getPrincipal());
+        log.warn("getVideo authentication: {}", authentication.getPrincipal());
+        Long userId = null;
+        if (authentication != null && authentication.getPrincipal() != null) {
+            userId = Long.parseLong((String) authentication.getPrincipal());
+            log.warn("getVideo authentication: {}", authentication.getPrincipal());
+
+            return videoService.getVideo(courseId, sectionId, lessonId, userId);
+        }
+        return Mono.empty();
     }
 }
 

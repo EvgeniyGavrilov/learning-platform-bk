@@ -9,4 +9,5 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CourseRepository extends ReactiveCrudRepository<Course, Long> {
     Flux<Course> findByAuthorId(Long authorId);
+    Mono<Course> findByAuthorIdAndId(Long authorId, Long id);
 }

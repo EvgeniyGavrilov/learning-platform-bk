@@ -2,14 +2,13 @@ package com.medical_learning_platform.app.content.courses;
 
 
 import com.medical_learning_platform.app.content.AccessService;
-import com.medical_learning_platform.app.content.file_loader.UploadFileUtils;
+import com.medical_learning_platform.app.content.courses.dto.CourseByAuthorDto;
 import com.medical_learning_platform.app.content.published.PublishedCourseService;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -124,16 +123,56 @@ public class CourseService {
     }
 
     /**
-     * Получить все опубликованных курсы автора
+     * Получить все курсы автора
      */
-    public Flux<Course> getCoursesByAuthor(Long authorId) {
-        return courseRepository.findByAuthorId(authorId);
+    public Flux<CourseByAuthorDto> getCoursesByAuthor(Long authorId) {
+        return courseRepository.findByAuthorId(authorId)
+            .flatMap(course ->
+                publishedCourseService.isCoursePublished(course.getId())
+                    .map(isPublished -> new CourseByAuthorDto(
+                            course.getId(),
+                            course.getAuthorId(),
+                            course.getTitle(),
+                            course.getDescription(),
+                            course.getImageUrl(),
+                            course.getCreatedAt(),
+                            isPublished
+                    ))
+            );
+    }
+    /**
+     * Получить курс автора
+     */
+    public Mono<CourseByAuthorDto> getCourseByAuthorIdAndCourseId(Long authorId, Long courseId) {
+        return courseRepository.findByAuthorIdAndId(authorId, courseId)
+            .flatMap(course ->
+                publishedCourseService.isCoursePublished(course.getId())
+                    .map(isPublished -> new CourseByAuthorDto(
+                        course.getId(),
+                        course.getAuthorId(),
+                        course.getTitle(),
+                        course.getDescription(),
+                        course.getImageUrl(),
+                        course.getCreatedAt(),
+                        isPublished
+                    ))
+            );
     }
 
     /**
      * Получить все курсы автора
      */
-    public Flux<Course> getAllPublishedCoursesByAuthor(Long authorId) {
-        return publishedCourseService.allPublishedCoursesByAuthor(authorId);
+    public Flux<CourseByAuthorDto> getAllPublishedCoursesByAuthor(Long authorId) {
+        return publishedCourseService.allPublishedCoursesByAuthor(authorId).map(course -> {
+            return new CourseByAuthorDto(
+                course.getId(),
+                course.getAuthorId(),
+                course.getTitle(),
+                course.getDescription(),
+                course.getImageUrl(),
+                course.getCreatedAt(),
+                true
+            );
+        });
     }
 }

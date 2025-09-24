@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface PublishedCourseRepository extends ReactiveCrudRepository<PublishedCourse, Long> {
     Mono<Boolean> existsByCourseId(Long courseId);
+    Mono<Void> deleteByCourseId(Long courseId);
     Mono<PublishedCourse> findByCourseId(Long courseId);
     Mono<PublishedCourse> findByAuthorId(Long authorId);
     @Query("SELECT * FROM published_courses WHERE (:authorId IS NULL OR author_id <> :authorId)")

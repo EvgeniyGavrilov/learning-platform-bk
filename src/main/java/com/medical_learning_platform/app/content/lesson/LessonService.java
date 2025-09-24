@@ -153,7 +153,8 @@ public class LessonService {
                         )
                     )
                     .switchIfEmpty(
-                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lessons not found"))
+//                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lessons not found"))
+                            Mono.empty()
                     );
             });
 

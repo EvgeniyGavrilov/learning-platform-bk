@@ -133,8 +133,12 @@ public class VideoService {
      */
     public Mono<Video> getVideo(Long courseId, Long sectionId, Long lessonId, Long userId) {
         return accessService.hasReadAccessOrThrow(courseId, userId).then(
-            validateHierarchy(courseId, sectionId, lessonId).flatMap(lesson ->
-                videoRepository.findByLessonId(lesson.getId())
+            validateHierarchy(courseId, sectionId, lessonId)
+                .doOnNext(lesson -> log.info("getVideo hasReadAccessOrThrow and validateHierarchy, lesson id {}", lesson.getId()))
+                .flatMap(lesson ->
+                    videoRepository.findByLessonId(lesson.getId())
+                        .doOnNext(v -> log.info("Return video link: {}", v)
+                )
             )
         );
     }
