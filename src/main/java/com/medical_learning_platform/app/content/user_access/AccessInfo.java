@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.content;
+package com.medical_learning_platform.app.content.user_access;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

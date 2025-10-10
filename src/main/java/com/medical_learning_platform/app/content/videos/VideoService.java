@@ -1,9 +1,9 @@
 package com.medical_learning_platform.app.content.videos;
 
 
-import com.medical_learning_platform.app.content.AccessService;
+import com.medical_learning_platform.app.content.user_access.AccessService;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.file_loader.UploadFileUtils;
+import com.medical_learning_platform.app.utils.file_loader.UploadFileUtils;
 import com.medical_learning_platform.app.content.lesson.entity.Lesson;
 import com.medical_learning_platform.app.content.lesson.repository.LessonRepository;
 import com.medical_learning_platform.app.content.sections.repository.SectionRepository;

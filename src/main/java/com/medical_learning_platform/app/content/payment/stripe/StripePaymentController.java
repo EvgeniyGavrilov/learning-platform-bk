@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.payment.stripe;
+package com.medical_learning_platform.app.content.payment.stripe;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

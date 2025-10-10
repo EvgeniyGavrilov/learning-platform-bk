@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.content.file_loader;
+package com.medical_learning_platform.app.utils.file_loader;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.multipart.FilePart;

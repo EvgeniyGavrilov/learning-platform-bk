@@ -1,6 +1,6 @@
-package com.medical_learning_platform.app.content.published.repository;
+package com.medical_learning_platform.app.content.published_courses.repository;
 
-import com.medical_learning_platform.app.content.published.entity.PublishedCourse;
+import com.medical_learning_platform.app.content.published_courses.entity.PublishedCourse;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

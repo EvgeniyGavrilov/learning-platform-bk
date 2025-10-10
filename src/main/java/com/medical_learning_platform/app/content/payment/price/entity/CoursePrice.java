@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.payment.price;
+package com.medical_learning_platform.app.content.payment.price.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,10 +1,10 @@
 package com.medical_learning_platform.app.content.sections;
 
 
-import com.medical_learning_platform.app.content.AccessService;
+import com.medical_learning_platform.app.content.user_access.AccessService;
 import com.medical_learning_platform.app.content.courses.CourseService;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.published.PublishedCourseService;
+import com.medical_learning_platform.app.content.published_courses.PublishedCourseService;
 import com.medical_learning_platform.app.content.sections.entity.Section;
 import com.medical_learning_platform.app.content.sections.repository.SectionRepository;
 import lombok.AllArgsConstructor;

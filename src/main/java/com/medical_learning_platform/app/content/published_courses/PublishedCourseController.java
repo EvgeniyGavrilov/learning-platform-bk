@@ -1,8 +1,8 @@
-package com.medical_learning_platform.app.content.published;
+package com.medical_learning_platform.app.content.published_courses;
 
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.published.entity.PublishedCourse;
+import com.medical_learning_platform.app.content.published_courses.entity.PublishedCourse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -12,7 +12,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
-import java.util.Objects;
 
 @Slf4j
 @RestController

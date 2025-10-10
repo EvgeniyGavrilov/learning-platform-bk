@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.content.published.entity;
+package com.medical_learning_platform.app.content.published_courses.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

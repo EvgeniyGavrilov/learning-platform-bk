@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.payment.stripe;
+package com.medical_learning_platform.app.content.payment.stripe;
 
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;

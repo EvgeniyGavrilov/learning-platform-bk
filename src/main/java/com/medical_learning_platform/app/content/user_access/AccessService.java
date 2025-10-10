@@ -1,9 +1,8 @@
-package com.medical_learning_platform.app.content;
+package com.medical_learning_platform.app.content.user_access;
 
 import com.medical_learning_platform.app.content.courses.repository.CourseAccessRepository;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
-import com.medical_learning_platform.app.content.published.PublishedCourseService;
-import com.medical_learning_platform.app.content.published.repository.PublishedCourseRepository;
+import com.medical_learning_platform.app.content.published_courses.repository.PublishedCourseRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

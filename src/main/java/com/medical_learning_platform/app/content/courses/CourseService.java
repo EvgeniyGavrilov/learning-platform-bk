@@ -1,9 +1,9 @@
 package com.medical_learning_platform.app.content.courses;
 
 
-import com.medical_learning_platform.app.content.AccessService;
+import com.medical_learning_platform.app.content.user_access.AccessService;
 import com.medical_learning_platform.app.content.courses.dto.CourseByAuthorDto;
-import com.medical_learning_platform.app.content.published.PublishedCourseService;
+import com.medical_learning_platform.app.content.published_courses.PublishedCourseService;
 import com.medical_learning_platform.app.content.courses.entity.Course;
 import com.medical_learning_platform.app.content.courses.repository.CourseRepository;
 import lombok.AllArgsConstructor;

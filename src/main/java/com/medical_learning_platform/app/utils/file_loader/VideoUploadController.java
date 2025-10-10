@@ -1,4 +1,4 @@
-package com.medical_learning_platform.app.content.file_loader;
+package com.medical_learning_platform.app.utils.file_loader;
 
 import com.medical_learning_platform.app.content.videos.VideoService;
 import lombok.AllArgsConstructor;
