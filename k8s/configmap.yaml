@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-service-config
+  namespace: app-dev
+data:
+  SPRING_APPLICATION_NAME: "auth-service"
+  SPRING_R2DBC_URL: "r2dbc:postgresql://host.docker.internal:5432/reactive_base"
+  SPRING_R2DBC_POOL_ENABLED: "true"
+  SPRING_R2DBC_POOL_MAX_SIZE: "10"
+  SPRING_R2DBC_POOL_INITIAL_SIZE: "5"
+  SPRING_R2DBC_POOL_MAX_IDLE_TIME: "30000"
+#  redirect-uri
+  GOOGLE_AUTH_REDIRECT_URI: postmessage
+
+#  kubectl apply -f configmap.yaml

@@ -1,8 +1,8 @@
 spring:
   config:
     import:
-      - classpath:application-google.yml
-      - classpath:application-core.yml
-      - classpath:application-resilience.yml
-      - classpath:application-email.yml
-      - classpath:application-stripe.yml
+#      - classpath:application-google.yml
+#      - classpath:application-core.yml
+#      - classpath:application-resilience.yml
+#      - classpath:application-email.yml
+#      - classpath:application-stripe.yml

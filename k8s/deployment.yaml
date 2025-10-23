@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service         # Имя Deployment
+  namespace: app-dev         # Namespace, в котором он создаётся
+spec:
+  replicas: 2                # Сколько Pod’ов запускать одновременно
+  selector:
+    matchLabels:
+      app: user-service-deployment-selector   # Селектор для управления Pod’ами
+  template:
+    metadata:
+      labels:
+        app: user-service-deployment-selector   # Label для Pod’ов (должен совпадать с selector)
+    spec:
+      containers:
+        - name: user-service
+          image: user-service:1.0       # Docker-образ нашего Spring Boot приложения
+          ports:
+            - containerPort: 8080       # Порт, на котором приложение слушает внутри Pod
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+            - secretRef:
+                name: auth-service-secret
+# kubectl apply -f deployment.yaml

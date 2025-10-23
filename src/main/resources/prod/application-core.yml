@@ -1,0 +1,42 @@
+spring:
+#  servlet:
+#    multipart:
+#      max-file-size: 100000MB
+#      max-request-size: 100000MB
+  application:
+    name: auth-service
+
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
+    pool:
+      enabled: ${SPRING_R2DBC_POOL_ENABLED:true}
+      max-size: ${SPRING_R2DBC_POOL_MAX_SIZE:10}
+      initial-size: ${SPRING_R2DBC_POOL_INITIAL_SIZE:5}
+      max-idle-time: ${SPRING_R2DBC_POOL_MAX_IDLE_TIME:30000}
+    # properties:
+    #   sslMode: REQUIRE
+  sql:
+    init:
+      mode: never # always       # всегда выполнять schema.sql при старте
+      schema-locations: classpath:schema.sql
+
+  logging:
+    level:
+      reactor.netty.http.client: DEBUG
+      reactor.netty.http.server.HttpServer: WARN
+      reactor.netty.channel.ChannelOperationsHandler: WARN
+      org:
+        springframework:
+          web:
+            reactive:
+              function:
+                server:
+                  AbstractErrorWebExceptionHandler: WARN
+                client:
+                  ExchangeFunctions: TRACE
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET}
+  refresh-secret: ${JWT_REFRESH_SECRET}

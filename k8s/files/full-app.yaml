@@ -1,0 +1,93 @@
+# ----------------------------------------
+# 1️⃣ Namespace для изоляции окружения
+# ----------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-dev  # Все ресурсы будут в этом namespace
+
+---
+# ----------------------------------------
+# 2️⃣ Deployment для user-service
+# ----------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: app-dev
+spec:
+  replicas: 2  # Запускаем 2 Pod'а одновременно
+  selector:
+    matchLabels:
+      app: user-service-deployment-selector  # Селектор для управления Pod'ами
+  template:
+    metadata:
+      labels:
+        app: user-service-deployment-selector  # Label для Pod'ов (должен совпадать с selector)
+    spec:
+      containers:
+        - name: user-service
+          image: user-service:1.0      # Docker-образ приложения
+          ports:
+            - containerPort: 8080      # Порт, на котором приложение слушает
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+            - secretRef:
+                name: auth-service-secret
+
+---
+# ----------------------------------------
+# 3️⃣ Service для доступа к Pod'ам внутри кластера
+# ----------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: app-dev
+spec:
+  selector:
+    app: user-service-deployment-selector  # На какие Pod'ы направлять трафик
+  ports:
+    - port: 80         # Порт Service внутри кластера
+      targetPort: 8080 # Порт контейнера в Pod
+  type: ClusterIP      # Доступно только внутри кластера
+
+---
+# ----------------------------------------
+# 4️⃣ Ingress для доступа извне
+# ----------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: user-ingress
+  namespace: app-dev
+  annotations:
+    kubernetes.io/ingress.class: "nginx"  # Используем Nginx Ingress Controller
+spec:
+  ingressClassName: nginx   # указываем Ingress Controller через spec
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 80
+
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.1/deploy/static/provider/cloud/deploy.yaml
+# kubectl apply -f full-app.yaml
+
+# Check
+# kubectl get pods -n app-dev
+# kubectl get svc -n app-dev
+# kubectl get ingress -n app-dev
+
+#  kubectl apply -f namespace.yaml
+#  kubectl apply -f configmap.yaml
+#  kubectl apply -f secret.yaml
+#  kubectl apply -f deployment.yaml
+#  kubectl apply -f service.yaml
+#  kubectl apply -f ingress.yaml

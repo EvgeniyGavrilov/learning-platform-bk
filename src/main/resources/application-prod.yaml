@@ -1,0 +1,8 @@
+spring:
+  config:
+    import:
+      - "classpath:prod/application-google.yml"
+      - "classpath:prod/application-core.yml"
+      - "classpath:prod/application-resilience.yml"
+      - "classpath:prod/application-email.yml"
+      - "classpath:prod/application-stripe.yml"

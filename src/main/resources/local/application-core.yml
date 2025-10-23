@@ -19,7 +19,7 @@ spring:
     #   sslMode: REQUIRE
   sql:
     init:
-      mode: always       # всегда выполнять schema.sql при старте
+      mode: always # always or never выполнять schema.sql при старте
       schema-locations: classpath:schema.sql
 
   logging:

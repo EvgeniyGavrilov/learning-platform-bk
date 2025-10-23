@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_EMAIL_USERNAME:evgeniy.gavrilov.dev@gmail.com} # evgeniy.gavrilov.dev@gmail.com
+    password: ${GOOGLE_EMAIL_PASSWORD:azdr dxni jtmw dots} # azdr dxni jtmw dots
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        debug: true
+        transport:
+          protocol: smtp
