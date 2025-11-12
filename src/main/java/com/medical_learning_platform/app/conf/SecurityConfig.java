@@ -1,5 +1,7 @@
 package com.medical_learning_platform.app.conf;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medical_learning_platform.app.auth.token.TokenService;
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
@@ -9,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
@@ -21,7 +24,9 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -56,10 +61,66 @@ public class SecurityConfig {
             )
             .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .exceptionHandling(exceptionHandling ->
-                exceptionHandling.authenticationEntryPoint((exchange, ex) -> {
-                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
-                })
+                exceptionHandling
+                    .authenticationEntryPoint((exchange, exAuth) -> {
+//                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+//                    return exchange.getResponse().setComplete();
+
+                        log.info("authenticationEntryPoint: Unauthorized access to URL: {}", exchange.getRequest().getURI());
+
+                        var body = Map.of(
+                        "timestamp", LocalDateTime.now().toString(),
+                        "status", 401,
+                        "error", "Unauthorized",
+                        "message", exAuth.getMessage(),
+                        "msId", "user-service",
+                        "source", "authenticationEntryPoint"
+                        );
+
+                        log.info(body.toString());
+
+                        byte[] bytes;
+                        try {
+                            bytes = new ObjectMapper().writeValueAsBytes(body);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+
+                        return exchange.getResponse().writeWith(
+                                Mono.just(exchange.getResponse().bufferFactory().wrap(bytes))
+                        );
+                    })
+                    .accessDeniedHandler((exchange, denied) -> {
+                        log.info("accessDeniedHandler: Forbidden access to URL: {}", exchange.getRequest().getURI());
+
+                        var body = Map.of(
+                        "timestamp", LocalDateTime.now().toString(),
+                        "status", 403,
+                        "error", "Forbidden",
+                        "message", denied.getMessage(),
+                        "msId", "user-service",
+                        "source", "accessDeniedHandler"
+                        );
+
+                        log.info(body.toString());
+
+                        byte[] bytes;
+                        try {
+                            bytes = new ObjectMapper().writeValueAsBytes(body);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+
+                        return exchange.getResponse().writeWith(
+                                Mono.just(exchange.getResponse().bufferFactory().wrap(bytes))
+                        );
+                    })
             )
             .build();
     }

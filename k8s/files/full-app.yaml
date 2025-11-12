@@ -53,29 +53,29 @@ spec:
       targetPort: 8080 # Порт контейнера в Pod
   type: ClusterIP      # Доступно только внутри кластера
 
----
-# ----------------------------------------
-# 4️⃣ Ingress для доступа извне
-# ----------------------------------------
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: user-ingress
-  namespace: app-dev
-  annotations:
-    kubernetes.io/ingress.class: "nginx"  # Используем Nginx Ingress Controller
-spec:
-  ingressClassName: nginx   # указываем Ingress Controller через spec
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: user-service
-                port:
-                  number: 80
+#---
+## ----------------------------------------
+## 4️⃣ Ingress для доступа извне
+## ----------------------------------------
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: user-ingress
+#  namespace: app-dev
+#  annotations:
+#    kubernetes.io/ingress.class: "nginx"  # Используем Nginx Ingress Controller
+#spec:
+#  ingressClassName: nginx   # указываем Ingress Controller через spec
+#  rules:
+#    - http:
+#        paths:
+#          - path: /
+#            pathType: Prefix
+#            backend:
+#              service:
+#                name: user-service
+#                port:
+#                  number: 80
 
 # kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.1/deploy/static/provider/cloud/deploy.yaml
 # kubectl apply -f full-app.yaml
